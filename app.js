@@ -297,7 +297,8 @@ function renderPerformance() {
   }
 
   function draw() {
-    yLabel.textContent = P.metrics.find((m) => m.id === curMetric).label + ' (%)';
+    const pct = curMetric === 'sr';
+    yLabel.textContent = P.metrics.find((m) => m.id === curMetric).label + (pct ? ' (%)' : '');
     plot.innerHTML = '';
     P.methods.forEach((method) => {
       const group = el('div', 'vgroup');
@@ -314,7 +315,7 @@ function renderPerformance() {
         if (regime.id !== 'base' && base != null) {
           const d = Math.round((v - base) * 100);
           const tag = el('div', 'vbar-delta ' + (d >= 0 ? 'pos' : 'neg'),
-            (d >= 0 ? '+' : '−') + Math.abs(d) + '%');
+            (d >= 0 ? '+' : '−') + Math.abs(d) + (pct ? '%' : ''));
           bar.append(tag);
         }
         bar.append(el('div', 'vbar-val', Math.round(v * 100) + ''));
