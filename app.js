@@ -116,6 +116,7 @@ function makeVideo(path) {
   const v = el('video');
   v.src = path;
   v.muted = true; v.loop = true; v.autoplay = true;
+  v.preload = 'metadata';
   v.setAttribute('playsinline', '');
   v.setAttribute('muted', '');
   return v;
