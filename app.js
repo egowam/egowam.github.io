@@ -253,16 +253,20 @@ function renderRobotDemo() {
   const stage = el('div', 'robot-demo-stage');
   mount.append(taskTabs.bar, splitBar, stage);
 
-  // Rebuild the split tab bar for the current task; hide it entirely if only one split exists.
+  // Rebuild the split tab bar for the current task. When only one split exists
+  // (e.g. Fold/Bag are OOD-only) show it as a static label so the regime is clear.
   function rebuildSplits() {
     splitBar.innerHTML = '';
     const avail = splitsFor(curTask);
-    splitBar.style.display = avail.length > 1 ? '' : 'none';
-    avail.forEach((s) => {
-      const b = el('button', 'tab-btn' + (s === curSplit ? ' active' : ''), splitLabels[s]);
-      b.addEventListener('click', () => { curSplit = s; rebuildSplits(); draw(); });
-      splitBar.append(b);
-    });
+    if (avail.length > 1) {
+      avail.forEach((s) => {
+        const b = el('button', 'tab-btn' + (s === curSplit ? ' active' : ''), splitLabels[s]);
+        b.addEventListener('click', () => { curSplit = s; rebuildSplits(); draw(); });
+        splitBar.append(b);
+      });
+    } else {
+      splitBar.append(el('span', 'split-badge', splitLabels[avail[0]]));
+    }
   }
 
   function draw() {

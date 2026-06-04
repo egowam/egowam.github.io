@@ -667,6 +667,18 @@ video.r2s-video-item {
   border-color: #222;
   color: #fff;
 }
+/* Static regime label for OOD-only tasks (no toggle to make). */
+.split-badge {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 6px 16px;
+  border: 1px solid #d8b9b9;
+  border-radius: 999px;
+  background: #f6ecec;
+  color: #8a4b4b;
+}
 
 /* --- Panel grids (data gallery: 3 sources; robot demo: N methods) --- */
 .panel-grid {
