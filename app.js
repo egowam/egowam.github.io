@@ -315,7 +315,7 @@ function renderPerformance() {
         if (regime.id !== 'base' && base != null) {
           const d = Math.round((v - base) * 100);
           const tag = el('div', 'vbar-delta ' + (d >= 0 ? 'pos' : 'neg'),
-            (d >= 0 ? '+' : '−') + Math.abs(d) + (pct ? '%' : ''));
+            (d >= 0 ? '+' : '−') + Math.abs(d) + '%');
           bar.append(tag);
         }
         bar.append(el('div', 'vbar-val', Math.round(v * 100) + ''));
