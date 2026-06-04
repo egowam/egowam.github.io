@@ -1,0 +1,1360 @@
+/* CSS styles for the article */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto+Mono:wght@300;700&display=swap');
+
+body {
+  background-color: #fdfaf4;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #1b1b1b;
+  padding: 60px 30px;
+}
+
+.toc {
+  width: 145px;
+  font-family: 'Roboto Mono', monospace;
+  position: fixed;
+  top: 250px;
+  /* Hide TOC by default */
+  display: none;
+  /* left: max(10px, calc(25vw - 320px)); */ /* Move left positioning into media query */
+  z-index: 1000; /* Add a high z-index to ensure TOC stays on top */
+}
+
+/* Media Query: Show the TOC once there is room beside the content column */
+@media (min-width: 1200px) {
+  .toc {
+    /* Show the TOC */
+    display: block;
+    /* Apply the calculated left position */
+    left: max(10px, calc(25vw - 320px));
+  }
+}
+
+.toc h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.toc hr {
+  border: 0;
+  height: 1px;
+  background-color: #ccc;
+  margin-bottom: 15px;
+}
+
+.toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc li {
+  margin-bottom: 10px;
+}
+
+.toc a {
+  text-decoration: none;
+  color: #333;
+  font-size: 16px;
+}
+
+.toc a:hover {
+  color: #000;
+  text-decoration: underline;
+}
+
+.main-content {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.hero-text {
+  font-size: 60px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.sub-hero-text {
+  font-size: 40px;
+  font-weight: 400;
+  margin-bottom: 50px;
+  line-height: 1.2;
+}
+
+/* New style for authors */
+.authors {
+  font-family: 'Roboto Mono', monospace; /* Use a monospace font like taglines */
+  font-size: 16px; /* Slightly smaller font size */
+  color: #333; /* Dark grey color */
+  line-height: 1.6; /* Adjust line spacing */
+  margin-top: -32.5px; /* Reduce space below subtitle */
+  margin-bottom: 17.5px; /* Add space below authors */
+  text-align: left; /* Ensure left alignment */
+}
+.authors span { /* Style for affiliation/notes */
+    display: block; /* Put affiliation/note on new line */
+    font-size: 14px;
+    color: #555;
+    margin-top: 0px;
+}
+/* Style for the affiliation specifically */
+.authors .affiliation {
+    /* Change from bold to a higher numeric weight */
+    /* font-weight: bold; */ 
+    /* Set font-weight to 700 (standard bold) */
+    font-weight: 600;  
+    font-size: 16px;   
+    color: #111;      
+}
+/* Style for links within the authors block */
+.authors a {
+    color: inherit; /* Inherit the color from the .authors class */
+    text-decoration: none; /* Remove default underline */
+}
+.authors a:hover {
+    text-decoration: underline; /* Add underline on hover */
+}
+/* End new style */
+
+.tagline {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 24px;
+  background: #000;
+  color: #fff;
+  display: inline-block;
+  padding: 8px 16px;
+  margin: 40px 0;
+}
+
+img {
+  width: 100%;
+  /* Update border: set width (e.g., 4px), style (solid), color (#000) */
+  /* border: 0cm solid #000; */
+  border: 1.5px solid #000; 
+  /* Add border-radius for rounded corners */
+  border-radius: 15px; 
+  margin: 0px 20px; /* Keep global rule if needed elsewhere */
+  /* Ensure images behave correctly with border-box sizing */
+  box-sizing: border-box; 
+}
+
+/* Override for images directly within .main-content that need to align */
+.main-content > img {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* General style for the specific image links */
+a#figure-1-img,
+a#figure-2-img,
+a#figure-3-img {
+  display: block; /* Ensures proper layout and application of margins */
+  text-decoration: none; /* Removes hyperlink underline */
+  cursor: default; /* Makes it not look like a clickable link */
+  /* margin-top is already set in their specific ID rules below */
+}
+
+/* Ensure images within these links take full width and are block */
+a#figure-1-img img,
+a#figure-2-img img,
+a#figure-3-img img {
+  display: block; /* Removes extra space below if image were inline */
+  width: 100%;    /* Makes image fill the link's width */
+  height: auto;   /* Maintains aspect ratio */
+  /* General img border styles will apply unless overridden below */
+}
+
+/* Style for Figure 1 (figs/2-min.png) link container */
+#figure-1-img {
+  margin-top: 20px; /* Consistent top margin */
+  margin-left: -25px; /* Override global img margin */
+  margin-right: 18px; /* Override global img margin */
+}
+
+/* Style for Figure 2 (figs/4.png) link container */
+#figure-2-img {
+  /* border: none; */ /* Remove border from the link itself */
+  border-radius: 0; /* Match the link's border-radius removal */
+  margin-left: -25px; /* Override global img margin */
+  margin-right: 17.5px; /* Override global img margin */
+  margin-top: 20px; /* Consistent top margin */
+}
+
+/* Specific border handling for image inside #figure-2-img link */
+a#figure-2-img img {
+  border: none; /* Ensure the image inside the borderless link is also borderless */
+  border-radius: 0; /* Match the link's border-radius removal */
+}
+
+/* Style for Figure 3 (figs/3.png) link container */
+#figure-3-img {
+  padding-left: 15px;
+  background-color: #fff;
+  margin-top: 20px;
+  /* The image inside will get the default border from global img styles */
+  border: 1.5px solid #000; /* Add border to the <a> tag */
+  border-radius: 15px;    /* Add border-radius to the <a> tag */
+  box-sizing: border-box; /* Ensure padding and border are within the element's width */
+  overflow: hidden; /* Clip child elements (the img) to the rounded corners */
+}
+
+/* Specific style for the image inside #figure-3-img link */
+a#figure-3-img img {
+  border: none; /* Remove border from the image itself */
+  border-radius: 0; /* Remove border-radius from the image */
+  margin: 0; /* Override global img margin to prevent interference with padding */
+}
+
+/* --- Updated Styles for Video Gallery --- */
+
+/* New outer wrapper for the whole section */
+.video-gallery-section {
+    margin-bottom: 40px; /* Space below the gallery section */
+    /* width: 100%; */ /* Was 100% of parent (.main-content) */
+    width: 100vw; /* Make the section span the full viewport width */
+    position: relative; /* Establishes a positioning context, good practice with calc for margins */
+    margin-left: calc((100% - 100vw) / 2); /* Calculates the negative margin to align left edge with viewport */
+    /* 100% here refers to the width of the containing block (.main-content) */
+    box-sizing: border-box; /* Ensures padding/border don't add to the 100vw width */
+}
+
+/* Container for the scrollable videos - now wider */
+.video-gallery-container {
+  /* Remove position: relative */
+  /* Remove padding: 0 45px */
+  box-sizing: border-box;
+  /* width: 100%; */ /* Remove this to use max-width */
+  max-width: 1150px; /* Set a maximum width for the gallery container */
+  margin-left: auto;   /* Center the container */
+  margin-right: auto;  /* Center the container */
+  overflow-x: auto; /* Enable horizontal scrolling */
+  scroll-behavior: smooth; /* Smooth scrolling effect */
+   /* Hide scrollbar */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+.video-gallery-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+
+/* The actual scrolling div holding the videos */
+.video-gallery {
+  display: flex;
+  gap: 15px; /* Space between videos */
+  /* padding: 0 5vw; */ /* Original padding */
+  padding: 0 20px; /* Adjusted to fixed padding, or keep 5vw if preferred */
+  padding-bottom: 10px; /* Add some space at the bottom */
+  box-sizing: border-box;
+  width: max-content; /* Ensure it fits all videos horizontally */
+  margin: 0 auto; /* Center the flex container if it's narrower than the container (unlikely with max-content) */
+}
+
+
+.gallery-video {
+  flex: 0 0 auto; /* Prevent videos from shrinking/growing in the flex context */
+  /* width: 30vw; */ /* Remove fixed/relative width */
+  /* max-width: 450px; */ /* Remove max-width as width will be auto */
+  height: 220px;  /* Set a fixed height for all videos. Adjust this value as desired. */
+  width: auto;    /* Allow width to adjust to maintain original aspect ratio */
+  /* max-height: 253.125px; */ /* No longer needed if height is fixed */
+  /* object-fit: cover; */ /* Remove object-fit: cover to avoid cropping */
+  border-radius: 15px; /* Keep the rounded corners */
+  box-sizing: border-box;
+  background-color: #fdfaf4; /* Assuming you've reverted from the lime diagnostic */
+  /* Add a box-shadow for the glow/shadow effect */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Styles for the navigation buttons */
+.gallery-nav {
+  /* ... existing button styles (background, color, border, radius, size, etc.) ... */
+  background-color: rgba(40, 40, 40, 0.8);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 35px;  /* Slightly smaller buttons */
+  height: 35px; /* Slightly smaller buttons */
+  font-size: 20px; /* Slightly smaller font */
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  margin: 0 5px; /* Adjust margin between buttons */
+  flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+.gallery-nav:hover {
+    background-color: rgba(0, 0, 0, 1);
+}
+
+/* Container for the navigation buttons - remove centering margin */
+.gallery-nav-controls {
+    /* max-width: 960px; */ /* No longer needed */
+    /* margin: 15px auto 0 auto; */ /* Remove auto margin */
+    display: flex; /* Keep as flex to layout buttons */
+    /* justify-content: center; */ /* No longer needed */
+    align-items: center;
+    margin-right: 15px; /* Add space between buttons and caption text */
+}
+
+
+/* Container to center the gallery caption and buttons */
+.gallery-caption-container {
+    max-width: 960px; /* Align container with main content */
+    margin: 15px auto 0 auto; /* Top margin, centered horizontally */
+    padding: 0 20px; /* Match original caption padding */
+    box-sizing: border-box;
+    display: flex; /* Make it a flex container */
+    align-items: flex-start; /* Align items to the top */
+    justify-content: center; /* Center content horizontally */
+}
+
+/* Specific style adjustments for the gallery caption text */
+.figure-caption.gallery-caption {
+    margin-bottom: 0;
+    margin-top: 0; /* Remove top margin, alignment handled by flex */
+    text-align: left; /* Align text to the left within its space */
+    flex-grow: 1; /* Allow text to take available space if needed */
+    /* Optional: Add a small left margin if needed */
+    /* margin-left: 10px; */
+}
+/* --- End Video Gallery Styles --- */
+
+/* --- Styles for Real-to-Sim Vertical Video Layout --- */
+.r2s-vertical-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Space between the top and bottom rows */
+  margin-bottom: 5px;
+  /* padding: 0px 20px; */ /* REMOVE this horizontal padding */
+  box-sizing: border-box;
+}
+
+.r2s-video-row {
+  display: flex;
+  gap: 15px; /* Space between items in a row */
+  align-items: center; /* Vertically align items in the row */
+  justify-content: center; /* Center the group of items if they don't fill the width */
+}
+
+/* Styling for the "slots" - direct children of .r2s-video-row */
+/* These are the elements that will grow to fill the row. */
+.r2s-video-row > .r2s-video-item, /* Targets <video class="r2s-video-item"> directly in a row */
+.r2s-video-row > .stacked-ego-videos { /* Targets <div class="stacked-ego-videos"> directly in a row */
+  flex-grow: 1; /* Allow the slot to grow */
+  flex-basis: 0;  /* Good practice with flex-grow */
+  /* max-height: 240px; */ /* REMOVE max-height from general slot rule */
+
+  /* Make the slot a flex container to center its actual content (the video or the stack) */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border: 1px solid #fdfaf4; /* Border for the slot */
+  box-sizing: border-box;
+  background-color: #fdfaf4; /* Background for the slot */
+}
+
+/* Set max-height for slots in the TOP row */
+.r2s-top-row > .r2s-video-item,
+.r2s-top-row > .stacked-ego-videos { /* Though top row doesn't have stacked videos, good for consistency */
+  max-height: 266px;
+}
+
+/* Set max-height for slots in the BOTTOM row */
+.r2s-bottom-row > .r2s-video-item,
+.r2s-bottom-row > .stacked-ego-videos {
+  max-height: 247px;
+}
+
+/* General styling for ALL <video> elements with class r2s-video-item */
+/* This applies to videos directly in a row AND those inside .stacked-ego-videos */
+video.r2s-video-item {
+  display: block; /* Behaves well for sizing */
+  max-width: 100%;  /* Video won't exceed the width of its parent container (slot or stacked-ego-videos div) */
+  max-height: 100%; /* Video won't exceed the height of its parent container */
+  width: auto;      /* Maintain aspect ratio */
+  height: auto;     /* Maintain aspect ratio */
+  object-fit: contain; /* Show entire video, letterbox if needed */
+  background-color: #fdfaf4; /* Black background for letterboxing */
+  border: none; /* Video itself has no border; the slot has one if applicable */
+}
+
+/* Apply a slight scale to SMPL and G1 videos to hide potential 1px edge artifacts */
+.r2s-video-smpl,
+.r2s-video-g1 {
+  transform: scale(1.001);
+}
+
+/* Styling for the container of stacked videos */
+.stacked-ego-videos {
+  /* This element is a flex item within .r2s-video-row (handled by the rule above) */
+  /* and also a flex container for its children. */
+  display: flex; /* This ensures it behaves as a flex container for its children */
+                 /* It might override display:flex from the slot rule if that rule also targeted this class directly,
+                    but the current slot rule uses the child selector '>' so it's fine. */
+  flex-direction: column;
+  gap: 5px;
+  
+  width: auto; /* Width determined by its 1:1 children */
+  height: 100%; /* Take full available height of its slot (which is max 180px) */
+  max-width: 100%; /* Ensure it doesn't overflow its slot if children are unexpectedly wide */
+  
+  /* Remove any slot-like styling if it was applied by a more general class,
+     as its appearance is defined by its children and its slot parent. */
+  border: none; /* The slot around .stacked-ego-videos has the border */
+  background-color: transparent; /* The slot around .stacked-ego-videos has the background */
+  /* max-height is effectively controlled by its parent slot */
+}
+
+/* Styling for videos INSIDE the .stacked-ego-videos container */
+.stacked-ego-videos > video.r2s-video-item {
+  /* These videos are already styled by 'video.r2s-video-item' for object-fit, background, etc. */
+  /* We just need to enforce their 1:1 aspect ratio and height calculation. */
+  aspect-ratio: 1 / 1;
+  width: auto; /* Width will be derived from height and 1:1 aspect ratio */
+  height: calc(50% - (5px / 2)); /* Each takes half the parent's height, minus half the gap */
+  min-height: 0;
+  /* max-width and max-height of 100% (from video.r2s-video-item) are fine here,
+     as they refer to 100% of this specific video's calculated 1:1 box. */
+}
+/* --- End Real-to-Sim Vertical Video Layout Styles --- */
+
+/* --- Styles for Real-to-Sim Captions --- */
+.r2s-caption-row {
+  display: flex;
+  gap: 15px; /* Should match the gap in .r2s-video-row */
+  justify-content: center; /* Should match justify-content in .r2s-video-row */
+  margin-top: -15px; /* Small space between videos and captions */
+}
+
+.r2s-caption-item {
+  flex-grow: 1; /* Allow caption item to grow, similar to video slots */
+  flex-basis: 0;
+  text-align: center; /* Center text within its slot */
+  font-size: 13px; /* Adjust as needed */
+  color: #555; /* Adjust as needed */
+  font-family: 'Roboto Mono', monospace;
+  /* Optional: to better align with video slots if they have borders/padding */
+  /* padding: 0 5px; */
+}
+/* --- End Styles for Real-to-Sim Captions --- */
+
+.section {
+  font-size: 20px;
+  line-height: 1.7;
+  margin-bottom: 40px;
+}
+
+.pull-quote {
+  font-size: 32px;
+  font-style: italic;
+  font-weight: 400;
+  margin: 60px 0 20px 0;
+  color: #333;
+}
+
+.footer {
+  font-size: 14px;
+  font-family: 'Roboto Mono', monospace;
+  color: #666;
+  margin-top: 80px;
+  border-top: 1px solid #ccc;
+  padding-top: 30px;
+  text-align: center;
+}
+
+/* New style for figure captions */
+.figure-caption {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+  margin-top: 10px; /* Space above caption */
+  margin-bottom: 40px; /* Space below caption, before next element */
+  padding: 0 20px; /* Add some horizontal padding */
+}
+
+/* New styles for quick links */
+.quick-links {
+  text-align: center;
+  margin-top: -10px; /* Adjust to bring closer to caption if needed, or use a positive value for more space */
+  margin-bottom: 30px; /* Space before the next section (Abstract tagline) */
+}
+.quick-links a {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 18px; /* Slightly larger than caption */
+  font-weight: bold;
+  /* color: #337ab7; */ /* Standard link blue, or choose your own */
+  color: #333; /* Change to dark grey */
+  text-decoration: none;
+  margin: 0 36px; /* Spacing between links */
+  padding: 5px 8px; /* Add some padding for a button-like feel if desired */
+  /* border: 1px solid transparent; */ /* Optional: for button look */
+  /* border-radius: 4px; */ /* Optional: for button look */
+}
+.quick-links a:hover,
+.quick-links a:focus {
+  text-decoration: underline;
+  /* color: #23527c; */ /* Darker blue on hover */
+  color: #000; /* Optional: Change to black or slightly darker grey on hover */
+  /* background-color: #f0f0f0; */ /* Optional: background for button look on hover */
+  /* border-color: #ccc; */ /* Optional: for button look on hover */
+}
+/* End new styles for quick links */
+
+/* Adding subsection styling in the table of contents */
+.toc-subsection {
+  margin-left: 20px; /* Indent subsections in TOC */
+  font-size: 0.95em; /* Make slightly smaller than main sections */
+}
+
+/* Style for section subtitles (subsection headers) */
+.section-subtitle {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 20px;
+  background: #000;
+  color: #fff;
+  display: inline-block;
+  padding: 6px 14px;
+  margin: 30px 0;
+}
+
+.additional-video-row {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  align-items: flex-start;
+}
+.additional-video-item {
+  height: 220px;
+  width: auto;
+  border-radius: 15px;
+  background-color: #000;
+}
+#input-video-cropped {
+  width: 350px; /* Controls the visible width */
+  object-fit: cover; /* Crops the video to fit the width */
+}
+#input-video-cropped2 {
+  width: 250px; /* Controls the visible width */
+  object-fit: cover; /* Crops the video to fit the width */
+}
+#input-video-cropped3 {
+  width: 300px; /* Controls the visible width */
+  object-fit: cover; /* Crops the video to fit the width */
+}
+#input-video-cropped4 {
+  width: 250px; /* Controls the visible width */
+  object-fit: cover; /* Crops the video to fit the width */
+}
+
+/* Styling for individual videos within the gallery */
+.video-gallery .gallery-video {
+  /* width: auto; */ /* Let height dictate width for consistency */
+  height: 224px; /* Fixed height for all gallery videos */
+  margin-right: 0px; /* Spacing between videos */
+  flex-shrink: 0; /* Prevent videos from shrinking in the flex container */
+}
+
+/* Make videos in the Reconstruction Gallery taller */
+#reconstructionGallerySection .gallery-video {
+  height: 220px; /* Adjust this value as needed for desired taller height */
+}
+
+/* Styling for the caption and navigation controls container */
+.gallery-caption-container {
+  max-width: 960px; /* Align container with main content */
+  margin: 15px auto 0 auto; /* Top margin, centered horizontally */
+  padding: 0 20px; /* Match original caption padding */
+  box-sizing: border-box;
+  display: flex; /* Make it a flex container */
+  align-items: flex-start; /* Align items to the top */
+  justify-content: center; /* Center content horizontally */
+}
+
+/* --- BibTeX Styling --- */
+.bibtex-code {
+  background-color: rgba(80, 80, 80, 0.8); /* Match gallery arrow background */
+  color: #f1f1f1; /* Light text color for readability */
+  padding: 20px;
+  border-radius: 8px;
+  margin: 80px auto -40px; /* Spacing and centering, bottom margin reduced to 20px */
+  max-width: 1000px;  /* Max width of the BibTeX box */
+  box-sizing: border-box;
+  font-size: 14px; /* Base font size for BibTeX */
+}
+
+.bibtex-title {
+  font-family: 'Courier New', Courier, monospace; /* Same font family as code */
+  font-weight: bold;
+  font-size: 1.15em; /* Slightly larger than the code text */
+  margin-bottom: 10px; /* Space between title and pre block */
+  color: #f1f1f1; /* Ensure it matches the box text color */
+}
+
+.bibtex-code pre {
+  white-space: pre-wrap;       /* Allows text to wrap */
+  overflow-wrap: break-word;   /* Breaks long words if necessary (updated from word-wrap) */
+  margin: 0;                   /* Remove default margin from pre tag */
+}
+
+.bibtex-code code {
+  font-family: 'Courier New', Courier, monospace; /* Monospace font for code */
+  overflow-wrap: break-word; /* Ensure long words break to prevent overflow */
+  /* Color will be inherited from .bibtex-code */
+}
+/* --- End BibTeX Styling --- */
+/* --- Video Placeholder (remove once real videos are inserted) --- */
+.video-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: repeating-linear-gradient(
+    45deg, #f0f0f0, #f0f0f0 12px, #e6e6e6 12px, #e6e6e6 24px);
+  border: 2px dashed #bbb;
+  border-radius: 8px;
+  color: #888;
+  font-size: 16px;
+  font-style: italic;
+  text-align: center;
+  box-sizing: border-box;
+  padding: 10px;
+}
+/* --- End Video Placeholder --- */
+
+/* ===========================================================================
+   EGOWAM interactive components (tabs, carousels, panels, charts, viewers)
+   =========================================================================== */
+
+/* --- Hero / single videos --- */
+.hero-video {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+/* --- Tab / switcher buttons --- */
+.tab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 16px 0 14px;
+}
+.tab-btn {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  padding: 7px 16px;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+  background: #fafafa;
+  color: #444;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.tab-btn:hover { border-color: #888; color: #000; }
+.tab-btn.active {
+  background: #222;
+  border-color: #222;
+  color: #fff;
+}
+
+/* --- Panel grids (data gallery: 3 sources; robot demo: N methods) --- */
+.panel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.method-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.method-col { flex: 1 1 0; min-width: 220px; }
+.panel-col { min-width: 0; }
+.panel-title {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+/* --- Carousel --- */
+.carousel { width: 100%; }
+.carousel-stage { position: relative; width: 100%; }
+.carousel-item { width: 100%; height: auto; display: block; border-radius: 8px; }
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 8px;
+}
+.carousel-arrow {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 18px;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.carousel-arrow:hover:not(:disabled) { background: #222; color: #fff; border-color: #222; }
+.carousel-arrow:disabled { opacity: 0.3; cursor: default; }
+.carousel-counter {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  color: #666;
+  min-width: 44px;
+  text-align: center;
+}
+
+/* --- Performance bar charts --- */
+.perf-metric {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.perf-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.perf-legend-item {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  color: #444;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.perf-swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+.perf-group { margin-bottom: 22px; }
+.perf-group-label {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #333;
+}
+.perf-bar-row { margin: 6px 0; }
+.perf-bar-track {
+  width: 100%;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.perf-bar-fill {
+  height: 22px;
+  border-radius: 4px;
+  transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 2px;
+}
+.perf-bar-value {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  color: #fff;
+  padding-right: 8px;
+  white-space: nowrap;
+}
+
+/* --- World prediction grid --- */
+.wp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.wp-panel { min-width: 0; }
+.wp-panel video,
+.wp-panel .video-placeholder { width: 100%; height: auto; border-radius: 8px; display: block; }
+.wp-viewer {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+/* --- Panel videos fill their column --- */
+.panel-col video, .panel-col .video-placeholder,
+.method-col video, .method-col .video-placeholder { width: 100%; }
+
+/* --- Utility --- */
+.hidden { display: none !important; }
+
+/* --- Responsive: stack grids on narrow screens --- */
+@media (max-width: 700px) {
+  .panel-grid, .wp-grid { grid-template-columns: 1fr; }
+}
+
+/* --- Performance: vertical grouped bar chart --- */
+.vchart {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 4px;
+}
+.vchart-ylabel {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  align-self: center;
+}
+.vchart-plot {
+  flex: 1;
+  height: 320px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 6px;
+  padding: 26px 6px 0;
+  border-left: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  box-sizing: border-box;
+}
+.vgroup {
+  flex: 1 1 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.vgroup-bars {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 5px;
+}
+.vbar {
+  position: relative;
+  width: 26px;
+  max-width: 32%;
+  border-radius: 4px 4px 0 0;
+  height: 0;
+  transition: height 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.vbar-val {
+  position: absolute;
+  bottom: 3px;
+  left: 0; right: 0;
+  text-align: center;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  color: #6b5a1c;
+}
+.vbar-delta {
+  position: absolute;
+  top: -17px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.vbar-delta.pos { color: #2e7d32; }
+.vbar-delta.neg { color: #c62828; }
+.vgroup-label {
+  flex: 0 0 auto;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+}
+
+@media (max-width: 700px) {
+  .vbar { width: 16px; }
+  .vgroup-label { font-size: 11px; }
+}
+
+/* --- Interactive morphing UMAP --- */
+.umap-canvas-wrap {
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  margin-top: 6px;
+}
+.umap-canvas {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  display: block;
+  cursor: crosshair;
+}
+/* morph toggle bar with sliding pill (BC <-> WAM) */
+.morph-bar {
+  position: relative;
+  display: inline-flex;
+  gap: 4px;
+  background: #f0f0f0;
+  border-radius: 999px;
+  padding: 4px;
+  margin: 12px auto;
+}
+.tab-bar + .morph-bar, .morph-bar { display: flex; justify-content: center; }
+.morph-bar {
+  width: max-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+.morph-btn {
+  position: relative;
+  z-index: 1;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  padding: 6px 22px;
+  border: none;
+  background: transparent;
+  color: #555;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: color 0.25s ease;
+}
+.morph-btn.active { color: #fff; }
+.morph-slider {
+  position: absolute;
+  top: 4px; bottom: 4px;
+  border-radius: 999px;
+  background: #222;
+  transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+}
+.umap-state-label {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+  margin: 4px 0 2px;
+}
+.umap-tip {
+  position: fixed;
+  pointer-events: none;
+  background: #1a1a1a;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  display: none;
+  z-index: 1500;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+}
+
+/* ===========================================================================
+   Method: native HTML architecture diagram
+   =========================================================================== */
+.arch {
+  font-family: 'Roboto Mono', monospace;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 16px;
+  border: 1px solid #e6e2d6;
+  border-radius: 12px;
+  background: #fcfbf6;
+  margin-top: 6px;
+}
+.arch-row { display: flex; gap: 12px; justify-content: center; align-items: stretch; flex-wrap: wrap; width: 100%; }
+.arch-heads { gap: 28px; }
+.arch-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.arch-box {
+  border-radius: 8px;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.25;
+  border: 1.5px solid;
+  box-sizing: border-box;
+}
+.arch-box small { font-size: 11px; opacity: 0.85; font-weight: 400; }
+.head { background: #2c7a6c; border-color: #1f5b50; color: #fff; font-weight: 700; min-width: 220px; }
+.wm-head.pulse { box-shadow: 0 0 0 3px rgba(242,180,49,0.6); transition: box-shadow 0.2s; }
+.transformer {
+  width: 100%;
+  background: #f3ecc9;
+  border-color: #b9a96b;
+  color: #5b5230;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 8px;
+  padding: 14px 0;
+}
+.stem { background: #d8ecd2; border-color: #94c089; color: #2f5b2c; font-weight: 600; }
+.stem.robot { background: #fbe6cf; border-color: #e8a85f; color: #7a4f15; }
+.tok-group {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  border: 1.5px solid #d8d3c2; border-radius: 8px; padding: 8px 12px; background: #fff;
+}
+.tok-label { font-size: 12px; font-weight: 700; color: #444; }
+.ctx-note { font-size: 10px; color: #999; }
+.sq-row { display: flex; gap: 4px; }
+.sq { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+.arch-loss { font-size: 16px; font-style: italic; color: #b23b3b; }
+.arch-loss sub { font-size: 10px; }
+.arch-flow { color: #999; font-size: 18px; line-height: 1; }
+.arch-flow .up { display: inline-block; }
+.arch-legend { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; margin-top: 8px; font-size: 12px; color: #555; }
+.leg-item { display: inline-flex; align-items: center; gap: 6px; }
+.leg-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.leg-line { width: 22px; height: 0; display: inline-block; border-top: 2px solid #333; }
+.leg-line.dashed { border-top: 2px dashed #b23b3b; }
+
+/* build-in animation */
+.arch .anim { opacity: 0; transform: translateY(14px); }
+.arch.in .anim { opacity: 1; transform: none; transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22,1,0.36,1); }
+
+/* swappable world-model head switcher */
+.wm-switcher { margin-top: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.wm-pipeline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.wm-step {
+  font-family: 'Roboto Mono', monospace; font-size: 13px;
+  background: #eef3f2; border: 1.5px solid #2c7a6c; color: #1f5b50;
+  border-radius: 8px; padding: 10px 16px; text-align: center;
+}
+.wm-arrow { color: #2c7a6c; font-size: 18px; font-weight: 700; }
+.wm-target { font-family: 'Roboto Mono', monospace; font-size: 13px; color: #666; text-align: center; }
+
+@media (max-width: 700px) {
+  .transformer { font-size: 16px; letter-spacing: 4px; }
+  .head { min-width: 0; }
+}
+
+/* --- Swappable World-Model Head: slot + head tabs + detail card --- */
+.wm-head { position: relative; border-style: dashed; border-color: #f2b431; }
+.swap-badge {
+  position: absolute;
+  top: -10px; right: -8px;
+  background: #f2b431; color: #4a3a08;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 999px;
+  white-space: nowrap;
+}
+.wm-tabs { margin-top: 8px; }
+.wm-tabs .tab-bar { margin: 0; }
+.wm-tabs .tab-btn { padding: 5px 14px; font-size: 13px; }
+
+.wm-card {
+  width: 100%;
+  max-width: 620px;
+  border: 1.5px solid #2c7a6c;
+  border-radius: 12px;
+  background: #f6faf9;
+  padding: 16px 20px;
+  box-sizing: border-box;
+}
+.wm-card-header {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 16px; font-weight: 700; color: #1f5b50;
+  text-align: center;
+}
+.wm-card-sub {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px; color: #6a8c85; text-align: center;
+  margin: 2px 0 14px;
+}
+.wm-card-body {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; flex-wrap: wrap;
+}
+
+/* image slots (placeholders until pictures are dropped in) */
+.img-slot {
+  display: flex; align-items: center; justify-content: center;
+  background: repeating-linear-gradient(45deg,#f0f0f0,#f0f0f0 8px,#e8e8e8 8px,#e8e8e8 16px);
+  border: 1.5px dashed #bbb; border-radius: 8px;
+  color: #999; font-size: 11px; font-style: italic; text-align: center;
+  box-sizing: border-box; padding: 4px;
+}
+.img-fill { display: block; border-radius: 8px; border: 1px solid #ddd; }
+.stem-img { width: 100%; height: 48px; margin-bottom: 6px; }
+img.stem-img { object-fit: cover; height: 48px; }
+.dec-img { width: 150px; aspect-ratio: 4 / 3; }
+img.dec-img { width: 150px; height: auto; object-fit: cover; }
+
+/* --- Forward (solid, up) & backprop (dashed red, down) connectors --- */
+.arch-flow { display: flex; gap: 34px; justify-content: center; align-items: center; height: 36px; }
+.conn { position: relative; display: inline-block; height: 30px; }
+.conn.fwd { width: 2px; background: #333; }
+.conn.fwd::before {
+  content: ''; position: absolute; top: -2px; left: -4px; width: 0; height: 0;
+  border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 8px solid #333;
+}
+.conn.bwd { width: 0; border-left: 2px dashed #b23b3b; }
+.conn.bwd::after {
+  content: ''; position: absolute; bottom: -2px; left: -6px; width: 0; height: 0;
+  border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 8px solid #b23b3b;
+}
+
+/* --- Animated flow: forward streams up, backprop streams down --- */
+.arch-flow { gap: 36px; height: 40px; }
+.conn.fwd, .conn.bwd {
+  width: 4px; height: 34px; border: 0;
+  background-color: transparent; background-repeat: repeat-y;
+  background-size: 100% 12px;
+}
+.conn.fwd {
+  background-image: linear-gradient(to bottom, #2f2f2f 55%, rgba(0,0,0,0) 55%);
+  animation: arch-flow-up 0.6s linear infinite;
+}
+.conn.bwd {
+  background-image: linear-gradient(to bottom, #c0392b 55%, rgba(0,0,0,0) 55%);
+  animation: arch-flow-down 0.6s linear infinite;
+}
+.conn.fwd::before {
+  content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+  width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent;
+  border-bottom: 9px solid #2f2f2f;
+}
+.conn.fwd::after { content: none; }
+.conn.bwd::after {
+  content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+  width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent;
+  border-top: 9px solid #c0392b;
+}
+.conn.bwd::before { content: none; }
+@keyframes arch-flow-up   { to { background-position-y: -12px; } }
+@keyframes arch-flow-down { to { background-position-y:  12px; } }
+@media (prefers-reduced-motion: reduce) {
+  .conn.fwd, .conn.bwd { animation: none; }
+}
+
+/* --- Architecture + swappable head side-by-side layout --- */
+.arch-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 6px;
+}
+.arch-layout #arch-diagram { flex: 1 1 0; min-width: 0; margin-top: 0; }
+.arch-layout .wm-switcher {
+  flex: 0 0 300px;
+  margin-top: 0;
+  position: sticky;
+  top: 20px;
+}
+.arch-layout .wm-card { max-width: none; }
+.arch-layout .wm-card-body { flex-direction: column; gap: 10px; }
+.arch-layout .wm-pipeline { flex-direction: column; gap: 8px; }
+.arch-layout .wm-pipeline .wm-step { width: 100%; box-sizing: border-box; }
+.arch-layout .wm-arrow { font-size: 16px; line-height: 1; }
+.arch-layout .dec-img, .arch-layout img.dec-img { width: 100%; max-width: 200px; }
+
+@media (max-width: 820px) {
+  .arch-layout { flex-direction: column; }
+  .arch-layout .wm-switcher { flex-basis: auto; width: 100%; position: static; }
+  .arch-layout .wm-pipeline { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+}
+
+/* ===========================================================================
+   Method diagram — match ORIGINAL figure colors + parallel/inference toggle
+   =========================================================================== */
+.head { background: #1c4e76; border-color: #143a5a; color: #fff; }
+.wm-head { border-style: solid; border-color: #143a5a; }   /* drop gold dashed */
+.swap-badge { background: #143a5a; color: #fff; }
+.stem { background: #1c4e76; border-color: #143a5a; color: #fff; }
+.stem.robot { background: #a97a7b; border-color: #855d5e; color: #fff; }
+.transformer { background: #e0dabe; border-color: #bdb07e; color: #4a4327; }
+
+/* world-model head detail card → navy theme to match */
+.wm-step { background: #eaf0f5; border-color: #1c4e76; color: #16395a; }
+.wm-arrow { color: #1c4e76; }
+.wm-card { border-color: #1c4e76; background: #f5f8fb; }
+.wm-card-header { color: #16395a; }
+.wm-card-sub { color: #5a7088; }
+
+/* Mode toggle row */
+.arch-mode { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 10px 0 2px; flex-wrap: wrap; }
+.arch-mode-label { font-family: 'Roboto Mono', monospace; font-size: 13px; font-weight: 700; color: #555; }
+.arch-mode-hint { font-family: 'Roboto Mono', monospace; font-size: 12px; font-style: italic; color: #888; }
+
+/* "off at inference" tag on the World-Model Head */
+.wm-disabled-tag {
+  display: none; position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+  background: #c0392b; color: #fff; font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+}
+
+/* Inference: drop the World-Model Head (action-only, forward pass only) */
+.arch-layout.inference .wm-only:not(.wm-head) {
+  opacity: 0.22; filter: grayscale(0.85); transition: opacity 0.35s ease, filter 0.35s ease;
+}
+.arch-layout.inference .wm-head {
+  background: #aeb9c4; border-color: #9aa7b3; color: #eef2f5;
+  transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+}
+.arch-layout.inference .wm-head .swap-badge { display: none; }
+.arch-layout.inference .wm-head .wm-disabled-tag { display: inline-block; }
+.arch-layout.inference .conn.bwd { display: none; }      /* inference = forward only */
+.wm-only { transition: opacity 0.35s ease, filter 0.35s ease; }
+
+/* --- Parallel head connectors (two pairs, one under each head) --- */
+.arch-flow-row {
+  display: flex; gap: 28px; justify-content: center; align-items: center; height: 40px;
+}
+.arch-flow-row .flow-cell {
+  width: 220px; display: flex; gap: 30px; justify-content: center; align-items: center;
+}
+@media (max-width: 700px) {
+  .arch-flow-row .flow-cell { width: auto; flex: 1; gap: 20px; }
+}
+
+/* --- Provided assets: centered stem images + robot/human decoder pair --- */
+.stem-img { width: 100%; aspect-ratio: 16 / 9; height: auto; margin-bottom: 6px;
+  border-radius: 6px; overflow: hidden; }
+img.stem-img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+
+.wm-pair { display: flex; gap: 12px; justify-content: center; align-items: flex-start; }
+.wm-pair-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pair-img, img.pair-img {
+  width: 108px; height: 108px; object-fit: cover; object-position: center;
+  border-radius: 6px; border: 1px solid #cfd6dd; display: block;
+}
+.wm-pair-label { font-family: 'Roboto Mono', monospace; font-size: 11px; color: #555; }
+
+/* --- Constrain stem boxes so the inputs row stays on one line --- */
+.arch-inputs .stem { width: 168px; flex: 0 0 auto; padding: 8px 8px; box-sizing: border-box; }
+.arch-inputs .stem .stem-img { aspect-ratio: 4 / 3; }
+.arch-inputs { gap: 10px; flex-wrap: nowrap; }
+.arch-inputs .tok-group.ctx { flex: 0 0 auto; }
+@media (max-width: 760px) {
+  .arch-inputs { flex-wrap: wrap; justify-content: center; }
+}
+
+/* --- Stems: label pill on top, image below (matches original figure) --- */
+.arch-inputs { align-items: flex-start; }
+.stem-col { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 0 0 auto; }
+.stem-col .stem { width: 152px; padding: 7px 6px; font-size: 12.5px; box-sizing: border-box; }
+img.stem-img {
+  width: 152px; height: auto; display: block; object-fit: contain; margin: 0;
+  border: 2px solid #1c4e76; border-radius: 8px; box-sizing: border-box;
+  background: #0e2c46;
+}
+img.stem-img.robot { border-color: #a97a7b; background: #5d3f40; }
+.img-slot.stem-img { width: 152px; aspect-ratio: 4 / 3; border: 2px dashed #1c4e76; background: #eee; }
+.img-slot.stem-img.robot { border-color: #a97a7b; }
+
+/* --- Let the architecture figure break out wider than the text column --- */
+.arch-layout {
+  width: min(1180px, 95vw);
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+.arch-mode { width: min(1180px, 95vw); margin-left: 50%; transform: translateX(-50%); }
+@media (max-width: 900px) {
+  .arch-layout, .arch-mode { width: 100%; margin-left: 0; transform: none; }
+}
+
+/* --- Token lanes: single rounded bounding box with script-z (original figure) --- */
+.arch-tokens-bbox {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid #cbc6b4;
+  border-radius: 16px;
+  background: #fff;
+  padding: 6px 16px 8px;
+}
+.tok-z {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 20px;
+  color: #555;
+  margin-right: 12px;
+  align-self: center;
+}
+.arch-tokens-bbox .tok-group {
+  border: none;
+  background: transparent;
+  padding: 2px 16px;
+}
+.tok-divider {
+  width: 1px;
+  align-self: stretch;
+  background: #e4e0d0;
+  margin: 6px 0;
+}
+
+/* --- Keep the wide figure clear of the fixed TOC: left-align, extend right --- */
+.arch-layout {
+  width: min(1080px, calc(50vw + 420px));
+  margin-left: 0;
+  transform: none;
+}
+.arch-mode { width: auto; margin-left: 0; transform: none; }
+@media (max-width: 900px) {
+  .arch-layout { width: 100%; }
+}
+
+/* --- Prevent horizontal overflow from the figure break-out --- */
+html, body { overflow-x: hidden; }
+.arch-layout { width: min(1060px, calc(50vw + 380px)); }
+
+/* --- Narrow the side card (stack Robot/Human vertically) to give the diagram room --- */
+.arch-layout .wm-switcher { flex: 0 0 212px; }
+.arch-layout .wm-pair { flex-direction: column; align-items: center; gap: 10px; }
+.arch-layout .pair-img, .arch-layout img.pair-img { width: 150px; height: 150px; }
+.arch-inputs { gap: 8px; }
+
+/* --- Side card matches the diagram height; content centered vertically --- */
+.arch-layout { align-items: stretch; }
+.arch-layout .wm-switcher { position: static; }
+.arch-layout .wm-card {
+  flex: 1 1 auto; width: 100%; box-sizing: border-box;
+  display: flex; flex-direction: column; justify-content: center; gap: 14px;
+}
+
+/* --- Legend: dashed arrows matching the diagram connectors --- */
+.leg-arrow {
+  position: relative; display: inline-block; width: 26px; height: 0;
+  border-top: 2px dashed #2f2f2f; margin-right: 8px; vertical-align: middle;
+}
+.leg-arrow::after {
+  content: ''; position: absolute; right: -3px; top: -5px;
+  border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+  border-left: 6px solid #2f2f2f;
+}
+.leg-arrow.bwd { border-top-color: #c0392b; }
+.leg-arrow.bwd::after { border-left-color: #c0392b; }
+
+/* --- Under-construction note at the top --- */
+.construction-note {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  text-align: center;
+  color: #8a6d1a;
+  background: #fdf3d6;
+  border: 1px solid #e9d59a;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 24px;
+}

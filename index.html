@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EGOWAM: World Action Models Beyond Pixels with In-the-Wild Egocentric Human Data</title>
+  <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="toc">
+    <h3>Content</h3>
+    <hr>
+    <ul>
+      <li><a href="#abstract">Abstract</a></li>
+      <li><a href="#method">Method</a></li>
+      <li><a href="#data">Data Gallery</a></li>
+      <li><a href="#demos">Robot Demos</a></li>
+      <li><a href="#performance">Performance</a></li>
+      <li><a href="#umap">UMAP</a></li>
+      <li><a href="#world-pred">World Prediction</a></li>
+      <li><a href="#takeaways">Takeaways</a></li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <div class="construction-note">&#128679; Under construction for supplementary materials.</div>
+    <div class="hero-text">EGOWAM</div>
+    <div class="sub-hero-text">World Action Models Beyond Pixels with In-the-Wild Egocentric Human Data</div>
+
+    <!-- Authors -->
+    <div class="authors">
+      Anonymous Authors
+      <span class="affiliation">Under Review</span>
+      <span class="affiliation" style="color: #555; text-align: center; font-size: 20px; margin-top: 6px;">CoRL 2026 Submission</span>
+    </div>
+
+    <!-- Quick Links — hidden during anonymous review; un-comment and add URLs after review -->
+    <!--
+    <div class="quick-links">
+      <a href="#" target="_blank">[pdf]</a>
+      <a href="#" target="_blank">[arxiv]</a>
+      <a href="#" target="_blank">[code]</a>
+    </div>
+    -->
+
+    <!-- ===================== 1. TEASER VIDEO ===================== -->
+    <div id="teaser-video-mount"></div>
+
+    <!-- ===================== 2. ABSTRACT ===================== -->
+    <div class="tagline" id="abstract">Abstract.</div>
+    <div class="section">
+      Egocentric human data offers scalable supervision for robot manipulation. However, behavior cloning entangles transferable content&mdash;like objects, scenes, and task semantics&mdash;with non-transferable factors&mdash;like human morphology, head motion, and behavioral style.
+      We study whether <b>World Action Models (WAMs)</b> provide a better training signal by requiring policies to predict not only actions, but also how the scene evolves. The central question is <em>what world representation</em> best enables human-to-robot transfer.
+      We hypothesize that an effective world target should <b>abstract appearance</b>, <b>capture agent-invariant physical effects</b>, and <b>separate camera motion from environment change</b>.
+      We introduce <span style="font-variant: small-caps;">EgoWAM</span>, a controlled human-robot co-training framework that fixes the policy backbone, action head, and data mixture while varying only the world prediction target, comparing <b>Pixel</b>, <b>DINO</b>, and <b>3D motion flow</b>.
+      Across three real-world bimanual tasks, WAM co-training scales more effectively with in-the-wild egocentric human data than behavior cloning. Pixel-based prediction transfers weakly, while DINO and 3D flow yield substantial gains: DINO improves out-of-distribution object and scene generalization by up to <b>4&times;</b>, and 3D flow improves in-domain performance by <b>20&ndash;30%</b>.
+    </div>
+
+    <!-- Explanation video (part of Abstract) -->
+    <div id="explanation-video-mount"></div>
+    <p class="figure-caption">
+      <!-- TODO: caption for the explanation video -->
+    </p>
+
+    <!-- ===================== 3. METHOD ===================== -->
+    <div class="tagline" id="method">Method.</div>
+
+    <!-- Mode toggle: Inference drops the World-Model Head (action-only). -->
+    <div class="arch-mode">
+      <span class="arch-mode-label">Mode</span>
+      <div class="morph-bar" id="arch-mode-bar">
+        <button class="morph-btn active" data-mode="train">Training</button>
+        <button class="morph-btn" data-mode="infer">Inference</button>
+        <div class="morph-slider"></div>
+      </div>
+      <span class="arch-mode-hint" id="arch-mode-hint">both heads &amp; backprop active</span>
+    </div>
+
+    <!-- Native HTML architecture diagram (build-animates on scroll). -->
+    <div class="arch-layout" id="arch-layout">
+    <div id="arch-diagram" class="arch">
+      <!-- Heads -->
+      <div class="arch-row arch-heads">
+        <div class="arch-cell">
+          <div class="arch-loss anim">&#8466;<sub>action</sub></div>
+          <div class="arch-box head anim">Action Head<br><small>Flow Matching Decoder</small></div>
+        </div>
+        <div class="arch-cell">
+          <div class="arch-loss anim wm-only">&#8466;<sub>world</sub></div>
+          <div class="arch-box head wm-head anim wm-only">
+            <span class="swap-badge">&#8646; swappable</span>
+            <span class="wm-disabled-tag">&#10005; off at inference</span>
+            World&#8209;Model Head<br><small><span id="wm-head-name">3D Flow</span></small>
+          </div>
+          <div id="wm-tabs-mount" class="wm-tabs anim wm-only"></div>
+        </div>
+      </div>
+
+      <div class="arch-flow-row anim">
+        <div class="flow-cell"><span class="conn fwd"></span><span class="conn bwd"></span></div>
+        <div class="flow-cell wm-only"><span class="conn fwd"></span><span class="conn bwd"></span></div>
+      </div>
+
+      <!-- Token lanes: one rounded bounding box (matches original figure) -->
+      <div class="arch-tokens-bbox anim">
+        <span class="tok-z">z</span>
+        <div class="tok-group"><span class="tok-label">Action Tokens</span><div class="sq-row" data-color="purple"></div></div>
+        <div class="tok-divider"></div>
+        <div class="tok-group"><span class="tok-label">Obs. Tokens</span><div class="sq-row" data-color="salmon"></div></div>
+        <div class="tok-divider"></div>
+        <div class="tok-group"><span class="tok-label">Future Tokens</span><div class="sq-row" data-color="green"></div></div>
+      </div>
+
+      <div class="arch-flow anim"><span class="conn fwd"></span><span class="conn bwd"></span></div>
+
+      <!-- Transformer trunk -->
+      <div class="arch-box transformer anim">TRANSFORMER</div>
+
+      <div class="arch-flow anim"><span class="conn fwd"></span><span class="conn bwd"></span></div>
+
+      <!-- Input stems + learned-context tokens -->
+      <div class="arch-row arch-inputs">
+        <div class="stem-col anim"><div class="arch-box stem" data-stem="ego">Ego Vision Stem</div></div>
+        <div class="stem-col anim"><div class="arch-box stem" data-stem="proprio">Proprio Stem</div></div>
+        <div class="stem-col anim"><div class="arch-box stem robot" data-stem="wrist">Wrist Vision Stem</div></div>
+        <div class="tok-group ctx anim"><span class="tok-label">Action Tokens</span><div class="sq-row" data-color="purple"></div><span class="ctx-note">Learned Context</span></div>
+        <div class="tok-group ctx anim"><span class="tok-label">Future Tokens</span><div class="sq-row" data-color="green"></div><span class="ctx-note">Learned Context</span></div>
+      </div>
+
+      <!-- Legend -->
+      <div class="arch-legend anim">
+        <span class="leg-item"><span class="leg-dot" style="background:#1c4e76"></span>Human &amp; Robot</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#a97a7b"></span>Robot</span>
+        <span class="leg-item"><span class="leg-arrow fwd"></span>Forward Pass</span>
+        <span class="leg-item"><span class="leg-arrow bwd"></span>Backpropagation</span>
+      </div>
+    </div>
+
+    <!-- Swappable world-model head detail (interactive), shown to the right -->
+    <div id="wm-switcher" class="wm-switcher wm-only"></div>
+    </div><!-- /arch-layout -->
+
+    <p class="figure-caption">
+      <b>Architecture.</b> <span style="font-variant: small-caps;">EgoWAM</span> builds on a Heterogeneous Pretrained Transformer (HPT) backbone with embodiment-specific stems feeding a shared trunk. Two read-out heads&mdash;a shared <b>action head</b> (conditional flow matching) and a <b>swappable world-model head</b>&mdash;let us vary only the world target while holding the trunk, action head, and data mixture fixed. <em>Use the tabs to swap the world-model head.</em>
+    </p>
+
+    <!-- ===================== 4. DATA GALLERY ===================== -->
+    <div class="tagline" id="data">Data Gallery.</div>
+    <div class="section">
+      We co-train on three data sources per task: <b>robot</b> teleoperation, <b>in-domain human</b> (same scenes/objects, unmatched viewpoint and behavior), and <b>in-the-wild human</b> (diverse scenes, objects, and demonstrators). Use the buttons to switch tasks; each panel scrolls through clips with the arrows.
+    </div>
+    <!-- Built by app.js (task switcher + three carousels). Fill paths in CONFIG.dataGallery. -->
+    <div id="data-gallery"></div>
+
+    <!-- ===================== 5. ROBOT DEMOS ===================== -->
+    <div class="tagline" id="demos">Robot Demos.</div>
+    <div class="section">
+      Real-world rollouts comparing co-training recipes. Switch the <b>task</b> and the <b>In-Domain / OOD</b> split; each column is a different method.
+    </div>
+    <!-- Built by app.js (task switcher + ID/OOD switcher + method columns). Fill paths in CONFIG.robotDemo. -->
+    <div id="robot-demo"></div>
+
+    <!-- ===================== 6. PERFORMANCE ===================== -->
+    <div class="tagline" id="performance">Performance.</div>
+    <div class="section">
+      Real-world rollout results across the three tasks. Switch the <b>task</b>, the <b>In-Domain / OOD</b> split, and the <b>metric</b> (success rate or normalized score). Each method (BC, Pixel, Pixel-PT, DINO, 3D Flow) is shown for three training regimes&mdash;Robot Only, + In-Domain Human, and + EgoVerse&mdash;with the percentage labels giving the gain over Robot Only. OOD averages the unseen-object and unseen-scene splits.
+    </div>
+    <!-- Built by app.js (animated bar charts). -->
+    <div id="perf"></div>
+
+    <!-- ===================== 7. UMAP ===================== -->
+    <div class="tagline" id="umap">Representation (UMAP).</div>
+    <div class="section">
+      UMAP of the learned trunk representations, colored by data source. Toggle <b>BC</b> &harr; <b>WAM</b> to watch the embeddings morph. Under BC, robot and human data stay in separate clusters; WAM co-training pulls them into a shared space.
+    </div>
+    <!-- Interactive morphing UMAP, built by app.js from data/umap_coords.json (falls back to figs/umap.png). -->
+    <div id="umap-viz"></div>
+    <p class="figure-caption">
+      <b>UMAP of learned representations.</b> BC (HPT action features) isolates robot and human embeddings under unaligned actions, whereas WAM (3D-Flow co-training, concat features) aligns them into a shared space through task-relevant dynamics supervision.
+    </p>
+
+    <!-- ===================== 8. WORLD PREDICTION ===================== -->
+    <div class="tagline" id="world-pred">World Prediction.</div>
+    <div class="section">
+      What each world target predicts from the same observation. Pixel (VAE) and DINO (RAE) are shown as videos; 3D Flow is an interactive 4D viewer.
+    </div>
+    <!-- Built by app.js (3 panels). Fill paths/URL in CONFIG.worldPred. -->
+    <div id="wp-mount"></div>
+
+    <!-- ===================== 9. TAKEAWAYS ===================== -->
+    <div class="tagline" id="takeaways">Takeaways.</div>
+    <div class="section">
+      <ul>
+        <li><b>WAM co-training unlocks human-data scale.</b> Where action-only BC stalls (or degrades) under misaligned human data, predicting future dynamics turns the same data into reliable gains.</li>
+        <li><b>World representation is the next critical axis.</b> Pixels transfer weakly; abstraction is what matters&mdash;<b>DINO</b> drives object and scene generalization, while <b>3D flow</b> grounds in-domain spatial gains.</li>
+        <li><b>A recipe for the target.</b> An effective world representation should abstract appearance, keep effects consistent across embodiments, and factor out ego-motion&mdash;positioning human data as a flywheel for scalable robot learning.</li>
+      </ul>
+    </div>
+
+  </div> <!-- End of main-content div -->
+
+  <div class="footer">
+    Website template adapted from <a href="https://github.com/videomimic-1/videomimic-1.github.io" target="_blank"><span style="font-variant: small-caps;">VideoMimic</span></a>.
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
