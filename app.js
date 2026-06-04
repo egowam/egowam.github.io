@@ -228,32 +228,57 @@ function renderDataGallery() {
 function renderRobotDemo() {
   const mount = $('#robot-demo');
   if (!mount) return;
-  const splits = [{ id: 'id', label: 'In-Domain' }, { id: 'ood', label: 'OOD' }];
-  const panels = {};
-  CONFIG.tasks.forEach((t) => splits.forEach((s) => {
+  const splitLabels = { id: 'In-Domain', ood: 'OOD' };
+
+  // Which methods actually have a clip for a given task/split.
+  const methodsFor = (taskId, splitId) => {
+    const d = ((CONFIG.robotDemo[taskId] || {})[splitId]) || {};
+    return CONFIG.demoMethods.filter((m) => d[m.id]);
+  };
+  // Which splits have any clips for a given task.
+  const splitsFor = (taskId) => ['id', 'ood'].filter((s) => methodsFor(taskId, s).length);
+
+  // Only offer tasks that have at least one clip somewhere.
+  const tasks = CONFIG.tasks.filter((t) => splitsFor(t.id).length);
+  let curTask = tasks[0].id;
+  let curSplit = splitsFor(curTask)[0];
+
+  const taskTabs = makeTabs(tasks, (id) => {
+    curTask = id;
+    if (!splitsFor(curTask).includes(curSplit)) curSplit = splitsFor(curTask)[0];
+    rebuildSplits();
+    draw();
+  });
+  const splitBar = el('div', 'tab-bar');
+  const stage = el('div', 'robot-demo-stage');
+  mount.append(taskTabs.bar, splitBar, stage);
+
+  // Rebuild the split tab bar for the current task; hide it entirely if only one split exists.
+  function rebuildSplits() {
+    splitBar.innerHTML = '';
+    const avail = splitsFor(curTask);
+    splitBar.style.display = avail.length > 1 ? '' : 'none';
+    avail.forEach((s) => {
+      const b = el('button', 'tab-btn' + (s === curSplit ? ' active' : ''), splitLabels[s]);
+      b.addEventListener('click', () => { curSplit = s; rebuildSplits(); draw(); });
+      splitBar.append(b);
+    });
+  }
+
+  function draw() {
+    stage.innerHTML = '';
     const row = el('div', 'method-grid');
-    CONFIG.demoMethods.forEach((m) => {
+    methodsFor(curTask, curSplit).forEach((m) => {
       const col = el('div', 'method-col');
       col.append(el('div', 'panel-title', m.label));
-      const path = (((CONFIG.robotDemo[t.id] || {})[s.id]) || {})[m.id] || '';
-      col.append(makeMedia(path, `${t.label} &middot; ${s.label}<br>${m.label}`));
+      col.append(makeMedia(CONFIG.robotDemo[curTask][curSplit][m.id], ''));
       row.append(col);
     });
-    panels[`${t.id}-${s.id}`] = row;
-  }));
-
-  let curTask = CONFIG.tasks[0].id;
-  let curSplit = 'id';
-  function update() {
-    Object.entries(panels).forEach(([k, p]) =>
-      p.classList.toggle('hidden', k !== `${curTask}-${curSplit}`));
+    stage.append(row);
   }
-  const taskTabs  = makeTabs(CONFIG.tasks, (id) => { curTask = id; update(); });
-  const splitTabs = makeTabs(splits, (id) => { curSplit = id; update(); }, 'id');
 
-  mount.append(taskTabs.bar, splitTabs.bar);
-  Object.values(panels).forEach((p) => mount.append(p));
-  update();
+  rebuildSplits();
+  draw();
 }
 
 function renderPerformance() {
