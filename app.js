@@ -433,10 +433,14 @@ function umapBuildPoints(taskData) {
 
 function umapScaling(pts, W, H) {
   const padL = 16, padR = 16, padT = 16, padB = 16;
-  let xs = [], ys = [];
-  pts.forEach((p) => { xs.push(p.bx, p.ux); ys.push(p.by, p.uy); });
-  const xMin = Math.min(...xs), xMax = Math.max(...xs);
-  const yMin = Math.min(...ys), yMax = Math.max(...ys);
+  // Loop (not Math.min(...xs)) — the spread overflows the stack on dense clouds (~12k pts).
+  let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+  for (const p of pts) {
+    if (p.bx < xMin) xMin = p.bx; if (p.ux < xMin) xMin = p.ux;
+    if (p.bx > xMax) xMax = p.bx; if (p.ux > xMax) xMax = p.ux;
+    if (p.by < yMin) yMin = p.by; if (p.uy < yMin) yMin = p.uy;
+    if (p.by > yMax) yMax = p.by; if (p.uy > yMax) yMax = p.uy;
+  }
   const range = Math.max(xMax - xMin, yMax - yMin) * 1.1 || 1;
   const xMid = (xMin + xMax) / 2, yMid = (yMin + yMax) / 2;
   const plotW = W - padL - padR, plotH = H - padT - padB;
@@ -458,13 +462,15 @@ function umapDraw(canvas, pts, t, scale) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, W, H);
   const sc = scale.cur || (scale.cur = umapScaling(pts, W, H));
+  // Dense point cloud (~12k pts/state): small radius scales down as the cloud grows.
+  const r = pts.length > 6000 ? 1.6 : pts.length > 2000 ? 2.4 : 4.5;
+  ctx.globalAlpha = 0.7;
   for (const p of pts) {
     const x = p.bx + (p.ux - p.bx) * t;
     const y = p.by + (p.uy - p.by) * t;
     ctx.beginPath();
-    ctx.arc(sc.sx(x), sc.sy(y), 4.5, 0, Math.PI * 2);
+    ctx.arc(sc.sx(x), sc.sy(y), r, 0, Math.PI * 2);
     ctx.fillStyle = p.color;
-    ctx.globalAlpha = 0.8;
     ctx.fill();
   }
   ctx.globalAlpha = 1;
