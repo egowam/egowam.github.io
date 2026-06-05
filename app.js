@@ -93,10 +93,19 @@ const CONFIG = {
   },
 
   // ---- 8. World prediction visualization -----------------------------------
+  // Method switcher; each compares a robot-only model vs the co-trained model.
   worldPred: {
-    vae:        '',   // video, e.g. 'videos/wp_vae.mp4'
-    rae:        '',   // video, e.g. 'videos/wp_rae.mp4'
-    flowViewer: '',   // URL of the 4D interactive viewer to embed (iframe src)
+    methods: [
+      { id: 'vae',  label: 'Pixel (VAE)',
+        eva:     'videos/world_pred/VAE_eva__future.mp4',
+        cotrain: 'videos/world_pred/VAE_cotrain__future.mp4' },
+      { id: 'rae',  label: 'DINO (RAE)',
+        eva:     'videos/world_pred/RAE_eva__future.mp4',
+        cotrain: 'videos/world_pred/RAE_cotrain__future.mp4' },
+      { id: 'flow', label: '3D Flow',
+        eva:     'videos/world_pred/3DF_eva__point_flow.mp4',
+        cotrain: 'videos/world_pred/3DF_cotrain__point_flow.mp4' },
+    ],
   },
 };
 
@@ -379,29 +388,60 @@ function renderPerformance() {
 function renderWorldPred() {
   const mount = $('#wp-mount');
   if (!mount) return;
-  const W = CONFIG.worldPred;
-  const grid = el('div', 'wp-grid');
+  const methods = (CONFIG.worldPred && CONFIG.worldPred.methods) || [];
+  if (!methods.length) return;
 
-  function panel(title, contentEl) {
+  // Two side-by-side panels (robot-only vs cotrain); the tab bar swaps the method.
+  const grid = el('div', 'wp-grid wp-compare');
+  function panel(title) {
     const p = el('div', 'wp-panel');
     p.append(el('div', 'panel-title', title));
-    p.append(contentEl);
-    return p;
+    const slot = el('div', 'wp-slot');
+    p.append(slot);
+    return slot;
+  }
+  const evaSlot = panel('Robot-only');
+  const cotrainSlot = panel('Co-trained (robot + human)');
+  grid.append(evaSlot.parentNode, cotrainSlot.parentNode);
+
+  // Build every method's pair once and keep it mounted; switching just toggles
+  // visibility (no re-download). Manual play/pause, so no autoplay races.
+  const pairs = {};
+  methods.forEach((m) => {
+    const ev = makeMedia(m.eva, 'Robot-only<br><small>video</small>', { autoplay: false });
+    const co = makeMedia(m.cotrain, 'Co-trained<br><small>video</small>', { autoplay: false });
+    [ev, co].forEach((v) => { v.classList.add('hidden'); if (v.tagName === 'VIDEO') v.preload = 'none'; });
+    evaSlot.append(ev); cotrainSlot.append(co);
+    pairs[m.id] = [ev, co];
+  });
+
+  function show(id) {
+    Object.entries(pairs).forEach(([mid, pair]) => {
+      const on = mid === id;
+      pair.forEach((v) => {
+        v.classList.toggle('hidden', !on);
+        if (v.tagName === 'VIDEO') { if (on) v.play().catch(() => {}); else v.pause(); }
+      });
+    });
   }
 
-  grid.append(panel('Pixel VAE', makeMedia(W.vae, 'VAE prediction<br><small>video</small>')));
-  grid.append(panel('DINO (RAE)', makeMedia(W.rae, 'DINO prediction<br><small>video</small>')));
+  const tabs = makeTabs(methods.map((m) => ({ id: m.id, label: m.label })),
+                        show, methods[0].id);
+  mount.append(tabs.bar, grid);
 
-  let flowEl;
-  if (W.flowViewer) {
-    flowEl = el('iframe', 'wp-viewer');
-    flowEl.src = W.flowViewer;
-    flowEl.setAttribute('allowfullscreen', '');
-  } else {
-    flowEl = el('div', 'video-placeholder', '3D Flow<br><small>4D interactive viewer (iframe)</small>');
-  }
-  grid.append(panel('3D Flow &mdash; interactive', flowEl));
-  mount.append(grid);
+  // Defer downloads until the section scrolls into view, then prefetch every
+  // clip so later tab switches are instant.
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      Object.values(pairs).flat().forEach((v) => {
+        if (v.tagName === 'VIDEO') { v.preload = 'auto'; v.load(); }
+      });
+      show(methods[0].id);
+      io.disconnect();
+    });
+  }, { threshold: 0.15 });
+  io.observe(grid);
 }
 
 // ---- Interactive morphing UMAP (BC <-> WAM) --------------------------------

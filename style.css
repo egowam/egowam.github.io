@@ -803,6 +803,8 @@ video.r2s-video-item {
 .wp-panel { min-width: 0; }
 .wp-panel video,
 .wp-panel .video-placeholder { width: 100%; height: auto; border-radius: 8px; display: block; }
+/* Robot-only vs cotrain comparison: 2 equal columns, centered. */
+.wp-compare { grid-template-columns: repeat(2, 1fr); max-width: 820px; margin: 0 auto; }
 .wp-viewer {
   width: 100%;
   aspect-ratio: 1 / 1;
