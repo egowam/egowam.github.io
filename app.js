@@ -713,8 +713,6 @@ function imgSlot(path, label, cls) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  mountSingleVideo('#teaser-video-mount', CONFIG.teaserVideo,
-    'Insert teaser video<br><small>videos/teaser.mp4</small>', true);
   mountSingleVideo('#explanation-video-mount', CONFIG.explanationVideo,
     'Insert explanation video<br><small>videos/explanation.mp4</small>', true,
     { muted: false, loop: false, autoplay: false }); // narrated: play on demand w/ sound
