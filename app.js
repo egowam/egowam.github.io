@@ -9,7 +9,7 @@
 const CONFIG = {
   // ---- 1. Hero teaser + 3. Explanation video --------------------------------
   teaserVideo:      '',   // e.g. 'videos/teaser.mp4'
-  explanationVideo: '',   // e.g. 'videos/explanation.mp4'
+  explanationVideo: 'videos/explanation.mp4',
 
   // ---- Tasks (shared by Data Gallery + Robot Demos) -------------------------
   tasks: [
@@ -112,19 +112,20 @@ function el(tag, cls, html) {
   return e;
 }
 
-function makeVideo(path) {
+function makeVideo(path, opts = {}) {
+  const { muted = true, loop = true, autoplay = true } = opts;
   const v = el('video');
   v.src = path;
-  v.muted = true; v.loop = true; v.autoplay = true;
+  v.muted = muted; v.loop = loop; v.autoplay = autoplay;
   v.preload = 'metadata';
   v.setAttribute('playsinline', '');
-  v.setAttribute('muted', '');
+  if (muted) v.setAttribute('muted', '');
   return v;
 }
 
 // Returns a <video> if a path is given, otherwise a labelled placeholder box.
-function makeMedia(path, placeholderLabel) {
-  return path ? makeVideo(path) : el('div', 'video-placeholder', placeholderLabel);
+function makeMedia(path, placeholderLabel, opts) {
+  return path ? makeVideo(path, opts) : el('div', 'video-placeholder', placeholderLabel);
 }
 
 function setPlaying(node, on) {
@@ -187,10 +188,10 @@ function makeTabs(options, onChange, initial) {
 
 // ---- Section renderers ------------------------------------------------------
 
-function mountSingleVideo(sel, path, label, withControls) {
+function mountSingleVideo(sel, path, label, withControls, opts) {
   const mount = $(sel);
   if (!mount) return;
-  const m = makeMedia(path, label);
+  const m = makeMedia(path, label, opts);
   m.classList.add('hero-video');
   if (path && withControls) m.controls = true;
   mount.append(m);
@@ -715,7 +716,8 @@ document.addEventListener('DOMContentLoaded', () => {
   mountSingleVideo('#teaser-video-mount', CONFIG.teaserVideo,
     'Insert teaser video<br><small>videos/teaser.mp4</small>', true);
   mountSingleVideo('#explanation-video-mount', CONFIG.explanationVideo,
-    'Insert explanation video<br><small>videos/explanation.mp4</small>', true);
+    'Insert explanation video<br><small>videos/explanation.mp4</small>', true,
+    { muted: false, loop: false, autoplay: false }); // narrated: play on demand w/ sound
   initArch();
   initArchMode();
   renderDataGallery();
