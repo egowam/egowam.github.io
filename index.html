@@ -135,10 +135,18 @@
 
     <!-- Swappable world-model head detail (interactive), shown to the right -->
     <div id="wm-switcher" class="wm-switcher wm-only"></div>
+    <!-- Arrow: token box (z) → detail panel (positioned by app.js) -->
+    <div id="wm-panel-arrow" class="wm-panel-arrow wm-only" aria-hidden="true">
+      <span class="wm-panel-arrow-label">condition</span>
+      <svg class="wm-panel-arrow-svg" height="16">
+        <line class="wm-panel-arrow-line" x1="0" y1="8" x2="0" y2="8"></line>
+        <polygon class="wm-panel-arrow-head" points="0,8"></polygon>
+      </svg>
+    </div>
     </div><!-- /arch-layout -->
 
     <p class="figure-caption">
-      <b>Architecture.</b> <span style="font-variant: small-caps;">EgoWAM</span> builds on a Heterogeneous Pretrained Transformer (HPT) backbone with embodiment-specific stems feeding a shared trunk. Two read-out heads&mdash;a shared <b>action head</b> (conditional flow matching) and a <b>swappable world-model head</b>&mdash;let us vary only the world target while holding the trunk, action head, and data mixture fixed. <em>Use the tabs to swap the world-model head.</em>
+      <b>Architecture.</b> <span style="font-variant: small-caps;">EgoWAM</span> builds on a Heterogeneous Pretrained Transformer (HPT) backbone with embodiment-specific stems feeding a shared trunk. Two read-out heads&mdash;a shared <b>action head</b> (conditional flow matching), conditioned on the trunk's <b>action-token</b> outputs, and a <b>swappable world-model head</b>, conditioned on the <b>future-token</b> outputs and trained to reconstruct the future observation in its target space&mdash;let us vary only the world target while holding the trunk, action head, and data mixture fixed; the <b>obs-token</b> outputs serve as a shared condition for both heads. <em>Use the tabs to swap the world-model head.</em>
     </p>
 
     <!-- ===================== 4. DATA GALLERY ===================== -->

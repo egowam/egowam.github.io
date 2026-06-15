@@ -626,18 +626,31 @@ function renderUmap() {
 
 const SQ_COLORS = { purple: '#9489c4', salmon: '#cfb3ab', green: '#9fb599' };
 
+// The future ego RGB frame: input to the VAE & DINO encoders, and the VAE's
+// own reconstruction target (pixel head autoencodes it).
+const RGB_ROBOT = 'figs/dec_vae_robot.jpg';
+const RGB_HUMAN = 'figs/dec_vae_human.jpg';
+
+// decStep: index of the denoiser/decoder step the trunk tokens (z) condition.
+// inFlows: the top box is a pipeline input that feeds the encoder (VAE/DINO);
+//   false => it is a side condition (flow's point grid q), shown but not encoded.
+// condQ: the decoder is additionally conditioned on q (the point grid).
 const WM_HEADS = [
   { id: 'vae',  tab: 'VAE',     headName: 'VAE (Pixel)',
     target: 'Future ego frame in a pretrained video-VAE latent',
-    steps: ['VAE Encoder', 'Diffusion Transformer', 'VAE Decoder'],
+    steps: ['VAE Encoder', 'Diffusion Transformer', 'VAE Decoder'], decStep: 1,
+    inRobot: RGB_ROBOT, inHuman: RGB_HUMAN, inTitle: 'Input &mdash; future ego frame', inFlows: true,
     imgRobot: 'figs/dec_vae_robot.jpg', imgHuman: 'figs/dec_vae_human.jpg' },
   { id: 'rae',  tab: 'DINO',    headName: 'RAE (DINO)',
     target: 'DINO patch features of the future frame',
-    steps: ['DINO Encoder', 'Wide DDT', 'DDT Head'],
+    steps: ['DINO Encoder', 'Wide Diffusion Transformer', 'DDT Head'], decStep: 1,
+    inRobot: RGB_ROBOT, inHuman: RGB_HUMAN, inTitle: 'Input &mdash; future ego frame', inFlows: true,
     imgRobot: 'figs/dec_rae_robot.png', imgHuman: 'figs/dec_rae_human.png' },
   { id: 'flow', tab: '3D Flow', headName: '3D Flow',
     target: 'Camera-stabilized dense 3D motion field',
-    steps: ['Noised 3D Flow Vector', 'Flow Matching Decoder'],
+    steps: ['Noised 3D Flow Vector', 'Flow Matching Decoder'], decStep: 1,
+    inRobot: 'figs/grid_robot.png', inHuman: 'figs/grid_human.png',
+    inTitle: '<span class="cond-q">q</span> &mdash; point grid on current frame', inFlows: false, condQ: true,
     imgRobot: 'figs/dec_flow_robot.jpg', imgHuman: 'figs/dec_flow_human.jpg' },
 ];
 
@@ -684,37 +697,117 @@ function initArch() {
   const card = el('div', 'wm-card');
   const header = el('div', 'wm-card-header', '&#8646; Swappable World-Model Head');
   const body = el('div', 'wm-card-body');
-  const imgWrap = el('div', 'wm-img');
+  const inputBox = el('div', 'wm-input-box');
+  const inputTitle = el('div', 'wm-input-title', 'Input &mdash; future ego frame');
+  const inputWrap = el('div', 'wm-img');
+  const encArrow = el('div', 'wm-pred-arrow', '&#8595;');
+  inputBox.append(inputTitle, inputWrap);
   const pipe = el('div', 'wm-pipeline');
+  const predArrow = el('div', 'wm-pred-arrow', '&#8595;&nbsp;reconstructs');
+  const targetBox = el('div', 'wm-target-box');
+  const targetTitle = el('div', 'wm-target-title',
+    'Reconstruction Target <span class="wm-target-loss">&#8466;<sub>world</sub></span>');
+  const imgWrap = el('div', 'wm-img');
   const note = el('div', 'wm-target');
-  body.append(imgWrap, pipe);
-  card.append(header, body, note);
+  targetBox.append(targetTitle, imgWrap, note);
+  body.append(inputBox, encArrow, pipe, predArrow, targetBox);
+  card.append(header, body);
   mount.append(card);
 
-  function show(h) {
-    if (headName) headName.textContent = h.headName;
-    if (wmHeadBox) { wmHeadBox.classList.add('pulse'); setTimeout(() => wmHeadBox.classList.remove('pulse'), 500); }
-    imgWrap.innerHTML = '';
+  // script-z token bundle (matches the z on the trunk's token box)
+  const condZ = () => el('span', 'cond-z', 'z');
+
+  // robot OR human image pair, laid out horizontally
+  function fillPair(wrap, robot, human) {
+    wrap.innerHTML = '';
     const pair = el('div', 'wm-pair');
-    [['Robot', h.imgRobot], ['Human', h.imgHuman]].forEach(([lab, src]) => {
+    [['Robot', robot], ['Human', human]].forEach(([lab, src], i) => {
+      if (i > 0) pair.append(el('span', 'wm-or', 'OR'));
       const item = el('div', 'wm-pair-item');
       item.append(imgSlot(src, lab, 'pair-img'));
       item.append(el('span', 'wm-pair-label', lab));
       pair.append(item);
     });
-    imgWrap.append(pair);
+    wrap.append(pair);
+  }
+
+  function show(h) {
+    if (headName) headName.textContent = h.headName;
+    if (wmHeadBox) { wmHeadBox.classList.add('pulse'); setTimeout(() => wmHeadBox.classList.remove('pulse'), 500); }
+    const hasInput = !!h.inRobot;
+    inputBox.style.display = hasInput ? '' : 'none';
+    encArrow.style.display = (hasInput && h.inFlows) ? '' : 'none';
+    if (hasInput) {
+      inputTitle.innerHTML = h.inTitle || 'Input';
+      fillPair(inputWrap, h.inRobot, h.inHuman);
+    }
+    fillPair(imgWrap, h.imgRobot, h.imgHuman);
     pipe.innerHTML = '';
     h.steps.forEach((s, i) => {
       if (i > 0) pipe.append(el('span', 'wm-arrow', '&#8595;'));
-      pipe.append(el('div', 'wm-step', s));
+      const step = el('div', 'wm-step', s);
+      if (i === h.decStep) {
+        // the trunk tokens (z) — and the point grid (q) for flow — condition this decoder
+        const inlet = el('div', 'wm-cond-inlet');
+        inlet.append(condZ());
+        if (h.condQ) {
+          inlet.append(el('span', 'cond-plus', '+'));
+          inlet.append(el('span', 'cond-q', 'q'));
+        }
+        const row = el('div', 'wm-dec-row');
+        step.classList.add('wm-dec-step');
+        row.append(inlet, el('span', 'wm-cond-arrow', '&#8594;'), step);
+        pipe.append(row);
+      } else {
+        pipe.append(step);
+      }
     });
-    note.innerHTML = '<b>Target:</b> ' + h.target;
+    note.innerHTML = h.target;
+    requestAnimationFrame(positionPanelArrow); // head label may change box width
   }
   const tabs = makeTabs(WM_HEADS.map((h) => ({ id: h.id, label: h.tab })),
     (id) => show(WM_HEADS.find((h) => h.id === id)));
   tabsMount.append(tabs.bar);
   show(WM_HEADS[2]); // default to 3D Flow (headline)
   tabs.setActive('flow');
+
+  // --- arrow from the token box (z) to the swappable-head detail panel ------
+  // A single horizontal dashed arrow across the layout gap; repositioned on
+  // resize / image load / head swap, hidden when the panel stacks below.
+  function positionPanelArrow() {
+    const arrow = $('#wm-panel-arrow');
+    const layout = $('#arch-layout');
+    const bbox = arch.querySelector('.arch-tokens-bbox');
+    if (!arrow || !layout || !bbox) return;
+    const pos = (n) => { // offset of n relative to the .arch-layout box
+      let x = 0, y = 0;
+      while (n && n !== layout) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
+      return { x, y };
+    };
+    const from = pos(bbox);
+    const startX = Math.round(from.x + bbox.offsetWidth + 2);   // touch the z box
+    const endX = Math.round(pos(card).x) + 1;                   // tip touches the card border
+    const stacked = pos(mount).y > from.y + 50; // column layout (narrow screens)
+    if (stacked || endX - startX < 14) { arrow.style.display = 'none'; return; }
+    const w = endX - startX;
+    arrow.style.display = '';
+    arrow.style.left = startX + 'px';
+    arrow.style.width = w + 'px';
+    arrow.style.top = Math.round(from.y + bbox.offsetHeight / 2 - 8) + 'px'; // svg line sits at y=8
+    arrow.querySelector('.wm-panel-arrow-svg').setAttribute('width', w);
+    arrow.querySelector('.wm-panel-arrow-line').setAttribute('x2', w - 9);
+    arrow.querySelector('.wm-panel-arrow-head').setAttribute('points',
+      `${w - 10},2.5 ${w},8 ${w - 10},13.5`);
+  }
+  positionPanelArrow();
+  window.addEventListener('resize', positionPanelArrow);
+  if (window.ResizeObserver) {
+    // keep a reference on the element so the observer isn't garbage-collected
+    arch._panelRO = new ResizeObserver(positionPanelArrow);
+    arch._panelRO.observe($('#arch-layout') || arch);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(positionPanelArrow);
+  setTimeout(positionPanelArrow, 150); // after webfonts settle
 }
 
 // Training / Inference mode toggle: Inference drops the World-Model Head.

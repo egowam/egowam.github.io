@@ -1092,11 +1092,6 @@ video.r2s-video-item {
   font-size: 16px; font-weight: 700; color: #1f5b50;
   text-align: center;
 }
-.wm-card-sub {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 12px; color: #6a8c85; text-align: center;
-  margin: 2px 0 14px;
-}
 .wm-card-body {
   display: flex; align-items: center; justify-content: center;
   gap: 16px; flex-wrap: wrap;
@@ -1205,7 +1200,6 @@ img.dec-img { width: 150px; height: auto; object-fit: cover; }
 .wm-arrow { color: #1c4e76; }
 .wm-card { border-color: #1c4e76; background: #f5f8fb; }
 .wm-card-header { color: #16395a; }
-.wm-card-sub { color: #5a7088; }
 
 /* Mode toggle row */
 .arch-mode { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 10px 0 2px; flex-wrap: wrap; }
@@ -1243,6 +1237,18 @@ img.dec-img { width: 150px; height: auto; object-fit: cover; }
   .arch-flow-row .flow-cell { width: auto; flex: 1; gap: 20px; }
 }
 
+/* --- Arrow: token box (z) → swappable-head detail panel (positioned by app.js) --- */
+.arch-layout { position: relative; }
+.wm-panel-arrow { position: absolute; pointer-events: none; }
+.wm-panel-arrow-svg { display: block; overflow: visible; }
+.wm-panel-arrow-line { stroke: #143a5a; stroke-width: 2.5; stroke-dasharray: 7 5; }
+.wm-panel-arrow-head { fill: #143a5a; }
+.wm-panel-arrow-label {
+  position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+  font-family: 'Roboto Mono', monospace; font-size: 11px; font-weight: 700;
+  color: #143a5a; white-space: nowrap;
+}
+
 /* --- Provided assets: centered stem images + robot/human decoder pair --- */
 .stem-img { width: 100%; aspect-ratio: 16 / 9; height: auto; margin-bottom: 6px;
   border-radius: 6px; overflow: hidden; }
@@ -1250,6 +1256,63 @@ img.stem-img { width: 100%; height: 100%; object-fit: cover; object-position: ce
 
 .wm-pair { display: flex; gap: 12px; justify-content: center; align-items: flex-start; }
 .wm-pair-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.wm-or {
+  align-self: flex-start; height: 72px;
+  display: flex; align-items: center;
+  font-family: 'Roboto Mono', monospace; font-size: 10px; font-weight: 700; color: #888;
+}
+
+/* --- Condition (z, + point grid q for flow) feeding the decoder step --- */
+.wm-dec-row { display: flex; align-items: center; gap: 6px; width: 100%; }
+.wm-cond-inlet {
+  flex: 0 0 auto; display: flex; flex-direction: row; align-items: baseline; gap: 4px;
+  padding: 7px 11px; border: 1.5px dashed #1c4e76; border-radius: 8px; background: #eef3f8;
+}
+.cond-z, .cond-q {
+  font-family: 'Playfair Display', serif; font-style: italic; font-size: 17px;
+  line-height: 1; color: #16395a;
+}
+.cond-plus {
+  font-family: 'Playfair Display', serif; font-style: italic; font-size: 15px;
+  line-height: 1; color: #16395a;
+}
+.wm-input-title .cond-q { font-size: 14px; }
+.wm-cond-arrow { flex: 0 0 auto; align-self: center; color: #1c4e76; font-size: 16px; font-weight: 700; }
+.arch-layout .wm-pipeline .wm-dec-row .wm-dec-step {
+  flex: 1 1 auto; width: auto; min-width: 0;
+  box-shadow: 0 0 0 2px rgba(28,78,118,0.18);
+}
+
+/* --- WM card: "reconstructs" arrow, input box, reconstruction-target box --- */
+.wm-pred-arrow {
+  font-family: 'Roboto Mono', monospace; font-size: 12px; font-weight: 700;
+  color: #1c4e76; text-align: center;
+}
+.wm-input-box {
+  width: 100%; box-sizing: border-box;
+  border: 1.5px solid #cbd5df; border-radius: 10px; background: #fff;
+  padding: 9px 10px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.wm-input-title {
+  font-family: 'Roboto Mono', monospace; font-size: 11.5px; font-weight: 700;
+  color: #5a7088; text-align: center;
+}
+.wm-target-box {
+  width: 100%; box-sizing: border-box;
+  border: 1.5px dashed #b23b3b; border-radius: 10px; background: #fff;
+  padding: 9px 10px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.wm-target-title {
+  font-family: 'Roboto Mono', monospace; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.4px; text-transform: uppercase; color: #b23b3b; text-align: center;
+}
+.wm-target-title .wm-target-loss { font-style: italic; text-transform: none; margin-left: 4px; }
+.wm-target-box .wm-target { font-size: 11.5px; }
+.arch-layout .wm-target-box .pair-img, .arch-layout .wm-target-box img.pair-img {
+  width: 100%; max-width: 150px; height: auto; aspect-ratio: 1 / 1;
+}
 .pair-img, img.pair-img {
   width: 108px; height: 108px; object-fit: cover; object-position: center;
   border-radius: 6px; border: 1px solid #cfd6dd; display: block;
@@ -1277,6 +1340,12 @@ img.stem-img {
 img.stem-img.robot { border-color: #a97a7b; background: #5d3f40; }
 .img-slot.stem-img { width: 152px; aspect-ratio: 4 / 3; border: 2px dashed #1c4e76; background: #eee; }
 .img-slot.stem-img.robot { border-color: #a97a7b; }
+
+/* --- Keep the inputs row inside the panel: stems shrink to fit, capped at 152px --- */
+.arch-inputs .stem-col { flex: 1 1 0; min-width: 0; max-width: 152px; }
+.arch-inputs .stem-col .stem { width: 100%; }
+.arch-inputs img.stem-img, .arch-inputs .img-slot.stem-img { width: 100%; max-width: 152px; }
+.arch-inputs .tok-group.ctx { flex: 0 1 auto; min-width: 0; }
 
 /* --- Let the architecture figure break out wider than the text column --- */
 .arch-layout {
@@ -1333,10 +1402,14 @@ img.stem-img.robot { border-color: #a97a7b; background: #5d3f40; }
 html, body { overflow-x: hidden; }
 .arch-layout { width: min(1060px, calc(50vw + 380px)); }
 
-/* --- Narrow the side card (stack Robot/Human vertically) to give the diagram room --- */
+/* --- Side card: Robot/Human shown side by side, compact --- */
 .arch-layout .wm-switcher { flex: 0 0 212px; }
-.arch-layout .wm-pair { flex-direction: column; align-items: center; gap: 10px; }
-.arch-layout .pair-img, .arch-layout img.pair-img { width: 150px; height: 150px; }
+.arch-layout .wm-pair { flex-direction: row; align-items: flex-start; justify-content: center; gap: 5px; }
+.arch-layout .pair-img, .arch-layout img.pair-img { width: 72px; height: 72px; }
+.arch-layout .wm-target-box .pair-img, .arch-layout .wm-target-box img.pair-img,
+.arch-layout .wm-input-box .pair-img, .arch-layout .wm-input-box img.pair-img {
+  width: 72px; height: 72px; max-width: none; aspect-ratio: 1 / 1;
+}
 .arch-inputs { gap: 8px; }
 
 /* --- Side card matches the diagram height; content centered vertically --- */
@@ -1344,7 +1417,8 @@ html, body { overflow-x: hidden; }
 .arch-layout .wm-switcher { position: static; }
 .arch-layout .wm-card {
   flex: 1 1 auto; width: 100%; box-sizing: border-box;
-  display: flex; flex-direction: column; justify-content: center; gap: 14px;
+  display: flex; flex-direction: column; justify-content: center; gap: 12px;
+  padding: 16px 12px;
 }
 
 /* --- Legend: dashed arrows matching the diagram connectors --- */
