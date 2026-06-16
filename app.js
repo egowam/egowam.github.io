@@ -763,51 +763,12 @@ function initArch() {
       }
     });
     note.innerHTML = h.target;
-    requestAnimationFrame(positionPanelArrow); // head label may change box width
   }
   const tabs = makeTabs(WM_HEADS.map((h) => ({ id: h.id, label: h.tab })),
     (id) => show(WM_HEADS.find((h) => h.id === id)));
   tabsMount.append(tabs.bar);
   show(WM_HEADS[2]); // default to 3D Flow (headline)
   tabs.setActive('flow');
-
-  // --- arrow from the token box (z) to the swappable-head detail panel ------
-  // A single horizontal dashed arrow across the layout gap; repositioned on
-  // resize / image load / head swap, hidden when the panel stacks below.
-  function positionPanelArrow() {
-    const arrow = $('#wm-panel-arrow');
-    const layout = $('#arch-layout');
-    const bbox = arch.querySelector('.arch-tokens-bbox');
-    if (!arrow || !layout || !bbox) return;
-    const pos = (n) => { // offset of n relative to the .arch-layout box
-      let x = 0, y = 0;
-      while (n && n !== layout) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
-      return { x, y };
-    };
-    const from = pos(bbox);
-    const startX = Math.round(from.x + bbox.offsetWidth + 2);   // touch the z box
-    const endX = Math.round(pos(card).x) + 1;                   // tip touches the card border
-    const stacked = pos(mount).y > from.y + 50; // column layout (narrow screens)
-    if (stacked || endX - startX < 14) { arrow.style.display = 'none'; return; }
-    const w = endX - startX;
-    arrow.style.display = '';
-    arrow.style.left = startX + 'px';
-    arrow.style.width = w + 'px';
-    arrow.style.top = Math.round(from.y + bbox.offsetHeight / 2 - 8) + 'px'; // svg line sits at y=8
-    arrow.querySelector('.wm-panel-arrow-svg').setAttribute('width', w);
-    arrow.querySelector('.wm-panel-arrow-line').setAttribute('x2', w - 9);
-    arrow.querySelector('.wm-panel-arrow-head').setAttribute('points',
-      `${w - 10},2.5 ${w},8 ${w - 10},13.5`);
-  }
-  positionPanelArrow();
-  window.addEventListener('resize', positionPanelArrow);
-  if (window.ResizeObserver) {
-    // keep a reference on the element so the observer isn't garbage-collected
-    arch._panelRO = new ResizeObserver(positionPanelArrow);
-    arch._panelRO.observe($('#arch-layout') || arch);
-  }
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(positionPanelArrow);
-  setTimeout(positionPanelArrow, 150); // after webfonts settle
 }
 
 // Training / Inference mode toggle: Inference drops the World-Model Head.
