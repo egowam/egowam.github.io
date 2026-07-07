@@ -86,6 +86,22 @@ const CONFIG = {
     metrics: [{ id: 'ns', label: 'Normalized Score' }, { id: 'sr', label: 'Success Rate' }],
   },
 
+  // ---- 6b. Ablation: aligned vs. unaligned human co-training ----------------
+  // Success rate (%). Each method has a robot-only baseline plus two co-train
+  // regimes; BC collapses under unaligned data while 3D Flow stays robust.
+  ablation: {
+    yLabel: 'Success Rate (%)',
+    series: [
+      { id: 'bc',   label: 'BC',      color: '#4A7BA6' },
+      { id: 'flow', label: '3D Flow', color: '#F2B431' },
+    ],
+    groups: [
+      { id: 'robot',     label: 'Robot Only',         bc: 40, flow: 60 },
+      { id: 'indomain',  label: 'In-Domain Co-train', bc: 45, flow: 80 },
+      { id: 'unaligned', label: 'Unaligned Co-train', bc: 20, flow: 75 },
+    ],
+  },
+
   // ---- 3. Method diagram images (leave '' for a labelled placeholder) -------
   method: {
     stems:    { ego: 'figs/stem_ego.png', proprio: 'figs/stem_proprio.png', wrist: 'figs/stem_wrist.png' },
@@ -397,6 +413,59 @@ function renderPerformance() {
   io.observe(wrap);
 }
 
+// Ablation: aligned vs. unaligned human co-training. Grouped vertical bars
+// (BC vs 3D Flow) across Robot Only / In-Domain / Unaligned, styled like the
+// Performance chart; values sit above each bar and grow on scroll.
+function renderAblation() {
+  const mount = $('#ablation-chart');
+  if (!mount) return;
+  const cfg = CONFIG.ablation || {};
+  const series = cfg.series || [];
+  const groups = cfg.groups || [];
+  if (!series.length || !groups.length) return;
+
+  const legend = el('div', 'perf-legend');
+  series.forEach((s) => {
+    const item = el('span', 'perf-legend-item');
+    const sw = el('span', 'perf-swatch'); sw.style.background = s.color;
+    item.append(sw, document.createTextNode(s.label));
+    legend.append(item);
+  });
+  mount.append(legend);
+
+  const yLabel = el('div', 'vchart-ylabel', cfg.yLabel || '');
+  const plot = el('div', 'vchart-plot');
+  const wrap = el('div', 'vchart');
+  wrap.append(yLabel, plot);
+  mount.append(wrap);
+
+  groups.forEach((g) => {
+    const group = el('div', 'vgroup');
+    const bars = el('div', 'vgroup-bars');
+    series.forEach((s) => {
+      const v = g[s.id];
+      if (v == null) return;
+      const bar = el('div', 'vbar');
+      bar.style.background = s.color;
+      bar.style.height = '0%';
+      bar.dataset.target = Math.round(v) + '';
+      bar.append(el('div', 'vbar-val', Math.round(v) + '%'));
+      bars.append(bar);
+    });
+    group.append(bars, el('div', 'vgroup-label', g.label));
+    plot.append(group);
+  });
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      plot.querySelectorAll('.vbar').forEach((b) => { b.style.height = b.dataset.target + '%'; });
+      io.disconnect();
+    });
+  }, { threshold: 0.2 });
+  io.observe(wrap);
+}
+
 function renderWorldPred() {
   const mount = $('#wp-mount');
   if (!mount) return;
@@ -469,8 +538,8 @@ function renderWorldPred() {
       const c = charts[m.id];
       c.el.classList.toggle('hidden', !on);
       // Grow the visible chart's bars from 0; reset hidden ones so switching
-      // back re-animates.
-      c.bars.forEach((b) => { b.style.height = (on && revealed ? b.dataset.target : 0) + '%'; });
+      // back re-animates. (Horizontal bars: animate width.)
+      c.bars.forEach((b) => { b.style.width = (on && revealed ? b.dataset.target : 0) + '%'; });
     });
   }
 
@@ -478,7 +547,7 @@ function renderWorldPred() {
                         show, methods[0].id);
   mount.append(tabs.bar, grid);
   mount.append(el('p', 'figure-caption wp-metrics-note',
-    'Future-prediction error for the selected target (lower is better). The two bars share that target&rsquo;s scale &mdash; the taller bar is the larger error &mdash; with absolute MSE labelled and the change vs&nbsp;Robot&nbsp;Only marked on the + In-Domain Human bar.'));
+    'Future-prediction error for the selected target (lower is better). The two bars share that target&rsquo;s scale &mdash; the longer bar is the larger error &mdash; with absolute MSE labelled and the change vs&nbsp;Robot&nbsp;Only marked on the + In-Domain Human bar.'));
 
   // Defer clip downloads until the section scrolls in, then prefetch all so
   // later tab switches are instant; reveal + animate the first chart.
@@ -500,37 +569,33 @@ function renderWorldPred() {
 // + In-Domain Human), scaled to the larger value so the taller bar reads as
 // the bigger error. Returns { el, bars } so the caller can toggle + animate it.
 function buildTargetChart(row, conds) {
-  const chart = el('div', 'wp-chart');
-  const wrap = el('div', 'vchart wp-metrics-chart');
-  wrap.append(el('div', 'vchart-ylabel', 'MSE'));
-  const plot = el('div', 'vchart-plot');
-  wrap.append(plot);
-
+  const chart = el('div', 'wp-chart wp-hchart');
   const base = row.eva;                                // robot-only baseline
-  const denom = Math.max(row.eva, row.cotrain) || 1;   // tallest bar fills the plot
+  const denom = Math.max(row.eva, row.cotrain) || 1;   // longest bar fills the track
   const bars = [];
   conds.forEach((c) => {
     const v = row[c.id];
     if (v == null) return;
-    const group = el('div', 'vgroup');
-    const barsWrap = el('div', 'vgroup-bars');
-    const bar = el('div', 'vbar');
-    bar.style.background = c.color;
-    bar.style.height = '0%';
-    bar.dataset.target = ((v / denom) * 100).toFixed(1);
+    const rowEl = el('div', 'wp-hbar-row');
+    const head = el('div', 'wp-hbar-head');
+    head.append(el('span', 'wp-hbar-label', c.label));
     if (c.id !== 'eva' && base != null) {
       const d = Math.round(((v - base) / base) * 100);  // lower MSE = gain (green)
-      bar.append(el('div', 'vbar-delta ' + (d <= 0 ? 'pos' : 'neg'),
+      head.append(el('span', 'wp-hbar-delta ' + (d <= 0 ? 'pos' : 'neg'),
         (d <= 0 ? '↓' : '↑') + Math.abs(d) + '%'));
     }
-    bar.append(el('div', 'vbar-val', v.toFixed(5)));
-    barsWrap.append(bar);
-    group.append(barsWrap, el('div', 'vgroup-label', c.label));
-    plot.append(group);
-    bars.push(bar);
+    const track = el('div', 'wp-hbar-track');
+    const fill = el('div', 'wp-hbar-fill');
+    fill.style.background = c.color;
+    fill.style.width = '0%';
+    fill.dataset.target = ((v / denom) * 100).toFixed(1);
+    fill.append(el('span', 'wp-hbar-val', v.toFixed(5)));
+    track.append(fill);
+    rowEl.append(head, track);
+    chart.append(rowEl);
+    bars.push(fill);
   });
 
-  chart.append(wrap);
   if (row.metric) chart.append(el('div', 'wp-chart-metric', row.metric + ' · lower is better'));
   return { el: chart, bars };
 }
@@ -906,6 +971,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderDataGallery();
   renderRobotDemo();
   renderPerformance();
+  renderAblation();
   renderUmap();
   renderWorldPred();
 });
