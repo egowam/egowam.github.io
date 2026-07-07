@@ -809,8 +809,18 @@ video.r2s-video-item {
 }
 /* Colour swatch in the world-pred panel titles (mirrors the chart legend). */
 .panel-title .perf-swatch { vertical-align: middle; margin-right: 7px; width: 12px; height: 12px; }
-/* Robot-only vs cotrain comparison: 2 equal columns, centered. */
-.wp-compare { grid-template-columns: repeat(2, 1fr); max-width: 820px; margin: 0 auto; }
+/* Comparison row: two videos + the MSE chart, 3 equal columns, top-aligned. */
+.wp-compare { grid-template-columns: repeat(3, 1fr); max-width: 1060px; margin: 0 auto; align-items: start; }
+/* Chart panel (3rd column): keep the 2-bar chart tidy, centered, ~video height. */
+.wp-chart { max-width: 260px; margin: 0 auto; }
+/* Plot tracks the 4:3 video shape so heights stay balanced as columns shrink. */
+.wp-chart-panel .vchart { align-items: flex-start; }
+.wp-chart-panel .vchart-plot { height: auto; aspect-ratio: 4 / 3; min-height: 190px; }
+.wp-chart .vgroup-label { font-size: 10px; white-space: nowrap; }
+.wp-chart-metric {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px; color: #666; text-align: center; margin-top: 8px;
+}
 .wp-viewer {
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -918,7 +928,6 @@ video.r2s-video-item {
 }
 
 /* --- World-prediction quantitative chart (wider bars, longer value labels) --- */
-#wp-metrics-mount { max-width: 760px; margin: 10px auto 0; }
 .wp-metrics-chart .vbar { width: 64px; max-width: 44%; }
 .wp-metrics-chart .vbar-val { font-size: 11px; }  /* long decimals; dark on the light bars */
 .wp-metrics-note { margin-top: 14px; }

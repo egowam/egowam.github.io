@@ -107,10 +107,8 @@ const CONFIG = {
         cotrain: 'videos/world_pred/3DF_cotrain__point_flow.mp4' },
     ],
     // Quantitative future-prediction error (MSE, lower is better). VAE/RAE are
-    // latent-space MSE; flow is 3D point-flow MSE. Scales differ ~65x across
-    // targets, so bars are normalized per target to the robot-only baseline.
-    metricsTitle: 'Future-prediction error (MSE, lower is better)',
-    metricsYLabel: 'MSE (normalized per target)',
+    // latent-space MSE; flow is 3D point-flow MSE. Shown as a per-target 2-bar
+    // chart (Robot Only vs + In-Domain Human) beside the two video panels.
     conditions: [
       { id: 'eva',     label: 'Robot Only',        color: '#CFC8B4' },
       { id: 'cotrain', label: '+ In-Domain Human', color: '#FBE0A0' },
@@ -402,16 +400,21 @@ function renderPerformance() {
 function renderWorldPred() {
   const mount = $('#wp-mount');
   if (!mount) return;
-  const methods = (CONFIG.worldPred && CONFIG.worldPred.methods) || [];
+  const cfg = (CONFIG.worldPred) || {};
+  const methods = cfg.methods || [];
   if (!methods.length) return;
 
-  // Two side-by-side panels (robot-only vs cotrain); the tab bar swaps the method.
+  // Three panels in a row: the two comparison videos plus a per-target MSE
+  // chart. The tab bar (Pixel / DINO / 3D Flow) switches all three at once.
   const grid = el('div', 'wp-grid wp-compare');
-  // Label + colour come from CONFIG.worldPred.conditions so each video panel
-  // stays tied by colour to its bar in the quantitative MSE chart below.
-  const conds = (CONFIG.worldPred && CONFIG.worldPred.conditions) || [];
+  const conds = cfg.conditions || [];
   const condOf = (id, fb) => conds.find((c) => c.id === id) || fb;
-  function panel(cond) {
+  const evaCond = condOf('eva', { id: 'eva', label: 'Robot Only', color: '#CFC8B4' });
+  const cotrainCond = condOf('cotrain', { id: 'cotrain', label: '+ In-Domain Human', color: '#FBE0A0' });
+
+  // A video panel: coloured title + swatch, clip framed in the same colour so
+  // it stays tied to its bar in the chart panel.
+  function videoPanel(cond) {
     const p = el('div', 'wp-panel');
     p.style.setProperty('--wp-accent', cond.color);
     const title = el('div', 'panel-title');
@@ -422,43 +425,70 @@ function renderWorldPred() {
     p.append(slot);
     return slot;
   }
-  const evaSlot = panel(condOf('eva', { label: 'Robot Only', color: '#CFC8B4' }));
-  const cotrainSlot = panel(condOf('cotrain', { label: '+ In-Domain Human', color: '#FBE0A0' }));
-  grid.append(evaSlot.parentNode, cotrainSlot.parentNode);
+  const evaSlot = videoPanel(evaCond);
+  const cotrainSlot = videoPanel(cotrainCond);
 
-  // Build every method's pair once and keep it mounted; switching just toggles
-  // visibility (no re-download). Manual play/pause, so no autoplay races.
+  // Chart panel (third column): holds one hidden chart per target.
+  const chartPanel = el('div', 'wp-panel wp-chart-panel');
+  chartPanel.append(el('div', 'panel-title', 'Prediction MSE'));
+  const chartSlot = el('div', 'wp-slot wp-chart-slot');
+  chartPanel.append(chartSlot);
+  grid.append(evaSlot.parentNode, cotrainSlot.parentNode, chartPanel);
+
+  // MSE numbers live in a separate `metrics` array (methods hold video paths).
+  const metricsById = {};
+  (cfg.metrics || []).forEach((r) => { metricsById[r.id] = r; });
+
+  // Build each target's video pair + chart once, keep them mounted, and just
+  // toggle visibility on switch (no re-download, no rebuild).
   const pairs = {};
+  const charts = {};
   methods.forEach((m) => {
-    const ev = makeMedia(m.eva, 'Robot-only<br><small>video</small>', { autoplay: false });
-    const co = makeMedia(m.cotrain, 'Co-trained<br><small>video</small>', { autoplay: false });
+    const ev = makeMedia(m.eva, evaCond.label + '<br><small>video</small>', { autoplay: false });
+    const co = makeMedia(m.cotrain, cotrainCond.label + '<br><small>video</small>', { autoplay: false });
     [ev, co].forEach((v) => { v.classList.add('hidden'); if (v.tagName === 'VIDEO') v.preload = 'none'; });
     evaSlot.append(ev); cotrainSlot.append(co);
     pairs[m.id] = [ev, co];
+
+    const row = metricsById[m.id];
+    const chart = row ? buildTargetChart(row, [evaCond, cotrainCond])
+                      : { el: el('div', 'wp-chart'), bars: [] };
+    chart.el.classList.add('hidden');
+    chartSlot.append(chart.el);
+    charts[m.id] = chart;
   });
 
+  let revealed = false;
   function show(id) {
-    Object.entries(pairs).forEach(([mid, pair]) => {
-      const on = mid === id;
-      pair.forEach((v) => {
+    methods.forEach((m) => {
+      const on = m.id === id;
+      pairs[m.id].forEach((v) => {
         v.classList.toggle('hidden', !on);
         if (v.tagName === 'VIDEO') { if (on) v.play().catch(() => {}); else v.pause(); }
       });
+      const c = charts[m.id];
+      c.el.classList.toggle('hidden', !on);
+      // Grow the visible chart's bars from 0; reset hidden ones so switching
+      // back re-animates.
+      c.bars.forEach((b) => { b.style.height = (on && revealed ? b.dataset.target : 0) + '%'; });
     });
   }
 
   const tabs = makeTabs(methods.map((m) => ({ id: m.id, label: m.label })),
                         show, methods[0].id);
   mount.append(tabs.bar, grid);
+  mount.append(el('p', 'figure-caption wp-metrics-note',
+    'Future-prediction error for the selected target (lower is better). The two bars share that target&rsquo;s scale &mdash; the taller bar is the larger error &mdash; with absolute MSE labelled and the change vs&nbsp;Robot&nbsp;Only marked on the + In-Domain Human bar.'));
 
-  // Defer downloads until the section scrolls into view, then prefetch every
-  // clip so later tab switches are instant.
+  // Defer clip downloads until the section scrolls in, then prefetch all so
+  // later tab switches are instant; reveal + animate the first chart.
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
       if (!e.isIntersecting) return;
       Object.values(pairs).flat().forEach((v) => {
         if (v.tagName === 'VIDEO') { v.preload = 'auto'; v.load(); }
       });
+      revealed = true;
       show(methods[0].id);
       io.disconnect();
     });
@@ -466,71 +496,43 @@ function renderWorldPred() {
   io.observe(grid);
 }
 
-// Quantitative world-prediction error: grouped vertical bars (robot-only vs
-// co-trained), styled like the Performance chart. Bars are normalized per
-// target to the robot-only baseline (scales differ ~65x); absolute MSE is
-// labelled on each bar and a delta tag gives the % change vs robot-only.
-function renderWorldPredMetrics() {
-  const mount = $('#wp-metrics-mount');
-  if (!mount) return;
-  const cfg = (CONFIG.worldPred) || {};
-  const rows = cfg.metrics || [];
-  const conds = cfg.conditions || [];
-  if (!rows.length || !conds.length) return;
-
-  if (cfg.metricsTitle) mount.append(el('div', 'perf-metric', cfg.metricsTitle));
-
-  // Legend (conditions).
-  const legend = el('div', 'perf-legend');
-  conds.forEach((c) => {
-    const item = el('span', 'perf-legend-item');
-    const sw = el('span', 'perf-swatch'); sw.style.background = c.color;
-    item.append(sw, document.createTextNode(c.label));
-    legend.append(item);
-  });
-  mount.append(legend);
-
-  // Plot scaffold (reuses the Performance vchart styling).
-  const yLabel = el('div', 'vchart-ylabel', cfg.metricsYLabel || 'MSE');
-  const plot = el('div', 'vchart-plot');
+// One target's prediction error as two vertical bars (Robot Only vs
+// + In-Domain Human), scaled to the larger value so the taller bar reads as
+// the bigger error. Returns { el, bars } so the caller can toggle + animate it.
+function buildTargetChart(row, conds) {
+  const chart = el('div', 'wp-chart');
   const wrap = el('div', 'vchart wp-metrics-chart');
-  wrap.append(yLabel, plot);
-  mount.append(wrap);
+  wrap.append(el('div', 'vchart-ylabel', 'MSE'));
+  const plot = el('div', 'vchart-plot');
+  wrap.append(plot);
 
-  rows.forEach((row) => {
+  const base = row.eva;                                // robot-only baseline
+  const denom = Math.max(row.eva, row.cotrain) || 1;   // tallest bar fills the plot
+  const bars = [];
+  conds.forEach((c) => {
+    const v = row[c.id];
+    if (v == null) return;
     const group = el('div', 'vgroup');
-    const bars = el('div', 'vgroup-bars');
-    const base = row.eva; // robot-only baseline for this target
-    conds.forEach((c) => {
-      const v = row[c.id];
-      if (v == null) return;
-      const bar = el('div', 'vbar');
-      bar.style.background = c.color;
-      bar.style.height = '0%';
-      bar.dataset.target = (base ? (v / base) * 100 : 0).toFixed(1);
-      // Delta vs robot-only. Lower MSE is better, so a drop is a gain (green).
-      if (c.id !== 'eva' && base != null) {
-        const d = Math.round(((v - base) / base) * 100);
-        const tag = el('div', 'vbar-delta ' + (d <= 0 ? 'pos' : 'neg'),
-          (d <= 0 ? '↓' : '↑') + Math.abs(d) + '%');
-        bar.append(tag);
-      }
-      bar.append(el('div', 'vbar-val', v.toFixed(5)));
-      bars.append(bar);
-    });
-    group.append(bars, el('div', 'vgroup-label', row.label));
+    const barsWrap = el('div', 'vgroup-bars');
+    const bar = el('div', 'vbar');
+    bar.style.background = c.color;
+    bar.style.height = '0%';
+    bar.dataset.target = ((v / denom) * 100).toFixed(1);
+    if (c.id !== 'eva' && base != null) {
+      const d = Math.round(((v - base) / base) * 100);  // lower MSE = gain (green)
+      bar.append(el('div', 'vbar-delta ' + (d <= 0 ? 'pos' : 'neg'),
+        (d <= 0 ? '↓' : '↑') + Math.abs(d) + '%'));
+    }
+    bar.append(el('div', 'vbar-val', v.toFixed(5)));
+    barsWrap.append(bar);
+    group.append(barsWrap, el('div', 'vgroup-label', c.label));
     plot.append(group);
+    bars.push(bar);
   });
 
-  const animate = () => plot.querySelectorAll('.vbar')
-    .forEach((b) => { b.style.height = b.dataset.target + '%'; });
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((e) => { if (e.isIntersecting) { animate(); io.disconnect(); } });
-  }, { threshold: 0.2 });
-  io.observe(wrap);
-
-  mount.append(el('p', 'figure-caption wp-metrics-note',
-    'Latent MSE for Pixel&nbsp;(VAE) and DINO&nbsp;(RAE); flow MSE for 3D&nbsp;Flow. Bar heights are normalized within each target (scales differ), with absolute MSE labelled on each bar. Co-training lowers prediction error on every target&mdash;marginally for Pixel/DINO, but sharply for 3D&nbsp;Flow (&darr;45%).'));
+  chart.append(wrap);
+  if (row.metric) chart.append(el('div', 'wp-chart-metric', row.metric + ' · lower is better'));
+  return { el: chart, bars };
 }
 
 // ---- Interactive morphing UMAP (BC <-> WAM) --------------------------------
@@ -906,7 +908,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderPerformance();
   renderUmap();
   renderWorldPred();
-  renderWorldPredMetrics();
 });
 
 /* ----- Performance data (from paper; OOD = mean of ood_object & ood_scene) ----- */
