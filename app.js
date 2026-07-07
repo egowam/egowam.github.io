@@ -112,8 +112,8 @@ const CONFIG = {
     metricsTitle: 'Future-prediction error (MSE, lower is better)',
     metricsYLabel: 'MSE (normalized per target)',
     conditions: [
-      { id: 'eva',     label: 'Robot-only',                 color: '#a97a7b' },
-      { id: 'cotrain', label: 'Co-trained (robot + human)', color: '#1c4e76' },
+      { id: 'eva',     label: 'Robot Only',        color: '#CFC8B4' },
+      { id: 'cotrain', label: '+ In-Domain Human', color: '#FBE0A0' },
     ],
     metrics: [
       { id: 'vae',  label: 'Pixel (VAE)', metric: 'Latent MSE', eva: 0.01318, cotrain: 0.01309 },
@@ -407,15 +407,23 @@ function renderWorldPred() {
 
   // Two side-by-side panels (robot-only vs cotrain); the tab bar swaps the method.
   const grid = el('div', 'wp-grid wp-compare');
-  function panel(title) {
+  // Label + colour come from CONFIG.worldPred.conditions so each video panel
+  // stays tied by colour to its bar in the quantitative MSE chart below.
+  const conds = (CONFIG.worldPred && CONFIG.worldPred.conditions) || [];
+  const condOf = (id, fb) => conds.find((c) => c.id === id) || fb;
+  function panel(cond) {
     const p = el('div', 'wp-panel');
-    p.append(el('div', 'panel-title', title));
+    p.style.setProperty('--wp-accent', cond.color);
+    const title = el('div', 'panel-title');
+    const sw = el('span', 'perf-swatch'); sw.style.background = cond.color;
+    title.append(sw, document.createTextNode(cond.label));
+    p.append(title);
     const slot = el('div', 'wp-slot');
     p.append(slot);
     return slot;
   }
-  const evaSlot = panel('Robot-only');
-  const cotrainSlot = panel('Co-trained (robot + human)');
+  const evaSlot = panel(condOf('eva', { label: 'Robot Only', color: '#CFC8B4' }));
+  const cotrainSlot = panel(condOf('cotrain', { label: '+ In-Domain Human', color: '#FBE0A0' }));
   grid.append(evaSlot.parentNode, cotrainSlot.parentNode);
 
   // Build every method's pair once and keep it mounted; switching just toggles
