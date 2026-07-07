@@ -106,6 +106,20 @@ const CONFIG = {
         eva:     'videos/world_pred/3DF_eva__point_flow.mp4',
         cotrain: 'videos/world_pred/3DF_cotrain__point_flow.mp4' },
     ],
+    // Quantitative future-prediction error (MSE, lower is better). VAE/RAE are
+    // latent-space MSE; flow is 3D point-flow MSE. Scales differ ~65x across
+    // targets, so bars are normalized per target to the robot-only baseline.
+    metricsTitle: 'Future-prediction error (MSE, lower is better)',
+    metricsYLabel: 'MSE (normalized per target)',
+    conditions: [
+      { id: 'eva',     label: 'Robot-only',                 color: '#a97a7b' },
+      { id: 'cotrain', label: 'Co-trained (robot + human)', color: '#1c4e76' },
+    ],
+    metrics: [
+      { id: 'vae',  label: 'Pixel (VAE)', metric: 'Latent MSE', eva: 0.01318, cotrain: 0.01309 },
+      { id: 'rae',  label: 'DINO (RAE)',  metric: 'Latent MSE', eva: 0.40013, cotrain: 0.39751 },
+      { id: 'flow', label: '3D Flow',     metric: 'Flow MSE',   eva: 0.85579, cotrain: 0.47261 },
+    ],
   },
 };
 
@@ -442,6 +456,73 @@ function renderWorldPred() {
     });
   }, { threshold: 0.15 });
   io.observe(grid);
+}
+
+// Quantitative world-prediction error: grouped vertical bars (robot-only vs
+// co-trained), styled like the Performance chart. Bars are normalized per
+// target to the robot-only baseline (scales differ ~65x); absolute MSE is
+// labelled on each bar and a delta tag gives the % change vs robot-only.
+function renderWorldPredMetrics() {
+  const mount = $('#wp-metrics-mount');
+  if (!mount) return;
+  const cfg = (CONFIG.worldPred) || {};
+  const rows = cfg.metrics || [];
+  const conds = cfg.conditions || [];
+  if (!rows.length || !conds.length) return;
+
+  if (cfg.metricsTitle) mount.append(el('div', 'perf-metric', cfg.metricsTitle));
+
+  // Legend (conditions).
+  const legend = el('div', 'perf-legend');
+  conds.forEach((c) => {
+    const item = el('span', 'perf-legend-item');
+    const sw = el('span', 'perf-swatch'); sw.style.background = c.color;
+    item.append(sw, document.createTextNode(c.label));
+    legend.append(item);
+  });
+  mount.append(legend);
+
+  // Plot scaffold (reuses the Performance vchart styling).
+  const yLabel = el('div', 'vchart-ylabel', cfg.metricsYLabel || 'MSE');
+  const plot = el('div', 'vchart-plot');
+  const wrap = el('div', 'vchart wp-metrics-chart');
+  wrap.append(yLabel, plot);
+  mount.append(wrap);
+
+  rows.forEach((row) => {
+    const group = el('div', 'vgroup');
+    const bars = el('div', 'vgroup-bars');
+    const base = row.eva; // robot-only baseline for this target
+    conds.forEach((c) => {
+      const v = row[c.id];
+      if (v == null) return;
+      const bar = el('div', 'vbar');
+      bar.style.background = c.color;
+      bar.style.height = '0%';
+      bar.dataset.target = (base ? (v / base) * 100 : 0).toFixed(1);
+      // Delta vs robot-only. Lower MSE is better, so a drop is a gain (green).
+      if (c.id !== 'eva' && base != null) {
+        const d = Math.round(((v - base) / base) * 100);
+        const tag = el('div', 'vbar-delta ' + (d <= 0 ? 'pos' : 'neg'),
+          (d <= 0 ? '↓' : '↑') + Math.abs(d) + '%');
+        bar.append(tag);
+      }
+      bar.append(el('div', 'vbar-val', v.toFixed(5)));
+      bars.append(bar);
+    });
+    group.append(bars, el('div', 'vgroup-label', row.label));
+    plot.append(group);
+  });
+
+  const animate = () => plot.querySelectorAll('.vbar')
+    .forEach((b) => { b.style.height = b.dataset.target + '%'; });
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { animate(); io.disconnect(); } });
+  }, { threshold: 0.2 });
+  io.observe(wrap);
+
+  mount.append(el('p', 'figure-caption wp-metrics-note',
+    'Latent MSE for Pixel&nbsp;(VAE) and DINO&nbsp;(RAE); flow MSE for 3D&nbsp;Flow. Bar heights are normalized within each target (scales differ), with absolute MSE labelled on each bar. Co-training lowers prediction error on every target&mdash;marginally for Pixel/DINO, but sharply for 3D&nbsp;Flow (&darr;45%).'));
 }
 
 // ---- Interactive morphing UMAP (BC <-> WAM) --------------------------------
@@ -817,6 +898,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderPerformance();
   renderUmap();
   renderWorldPred();
+  renderWorldPredMetrics();
 });
 
 /* ----- Performance data (from paper; OOD = mean of ood_object & ood_scene) ----- */

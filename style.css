@@ -911,6 +911,21 @@ video.r2s-video-item {
   .vgroup-label { font-size: 11px; }
 }
 
+/* --- World-prediction quantitative chart (wider bars, longer value labels) --- */
+#wp-metrics-mount { max-width: 760px; margin: 10px auto 0; }
+.wp-metrics-chart .vbar { width: 64px; max-width: 44%; }
+.wp-metrics-chart .vbar-val {   /* long decimals: white, near the top, inside the bar */
+  color: #fff;
+  bottom: auto;
+  top: 8px;
+  font-size: 11px;
+}
+.wp-metrics-note { margin-top: 14px; }
+@media (max-width: 700px) {
+  .wp-metrics-chart .vbar { width: 42px; }
+  .wp-metrics-chart .vbar-val { font-size: 9px; }
+}
+
 /* --- Interactive morphing UMAP --- */
 .umap-canvas-wrap {
   border: 1px solid #e2e2e2;
