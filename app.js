@@ -87,18 +87,23 @@ const CONFIG = {
   },
 
   // ---- 6b. Ablation: aligned vs. unaligned human co-training ----------------
-  // Success rate (%). Each method has a robot-only baseline plus two co-train
-  // regimes; BC collapses under unaligned data while 3D Flow stays robust.
+  // Slope plot (as in the paper figure): success rate (%) across two co-train
+  // conditions, one line per method, with each method's robot-only success
+  // drawn as a baseline. BC collapses under unaligned data; 3D Flow holds.
   ablation: {
     yLabel: 'Success Rate (%)',
-    series: [
-      { id: 'bc',   label: 'BC',      color: '#4A7BA6' },
-      { id: 'flow', label: '3D Flow', color: '#F2B431' },
+    yMax: 100,
+    xCats: [
+      { id: 'indomain',  label: 'In-Domain Co-train' },
+      { id: 'unaligned', label: 'Unaligned Co-train' },
     ],
-    groups: [
-      { id: 'robot',     label: 'Robot Only',         bc: 40, flow: 60 },
-      { id: 'indomain',  label: 'In-Domain Co-train', bc: 45, flow: 80 },
-      { id: 'unaligned', label: 'Unaligned Co-train', bc: 20, flow: 75 },
+    series: [
+      { id: 'bc',   label: 'BC',      color: '#4A7BA6', marker: 'circle',
+        baseline: 40, baselineLabel: 'BC Robot Only 40%',
+        points: { indomain: 45, unaligned: 20 } },
+      { id: 'flow', label: '3D Flow', color: '#F2B431', marker: 'square',
+        baseline: 60, baselineLabel: '3D Flow Robot Only 60%',
+        points: { indomain: 80, unaligned: 75 } },
     ],
   },
 
@@ -413,57 +418,102 @@ function renderPerformance() {
   io.observe(wrap);
 }
 
-// Ablation: aligned vs. unaligned human co-training. Grouped vertical bars
-// (BC vs 3D Flow) across Robot Only / In-Domain / Unaligned, styled like the
-// Performance chart; values sit above each bar and grow on scroll.
+// Ablation: aligned vs. unaligned human co-training. Slope plot matching the
+// paper figure — one line per method across two co-train conditions, plus each
+// method's robot-only success as a baseline line. Lines draw in on scroll.
 function renderAblation() {
   const mount = $('#ablation-chart');
   if (!mount) return;
   const cfg = CONFIG.ablation || {};
+  const cats = cfg.xCats || [];
   const series = cfg.series || [];
-  const groups = cfg.groups || [];
-  if (!series.length || !groups.length) return;
+  if (!cats.length || !series.length) return;
 
+  // Legend (BC circle, 3D Flow square) above the plot, site style.
   const legend = el('div', 'perf-legend');
   series.forEach((s) => {
     const item = el('span', 'perf-legend-item');
-    const sw = el('span', 'perf-swatch'); sw.style.background = s.color;
+    const sw = el('span', 'perf-swatch' + (s.marker === 'circle' ? ' swatch-circle' : ''));
+    sw.style.background = s.color;
     item.append(sw, document.createTextNode(s.label));
     legend.append(item);
   });
   mount.append(legend);
 
-  const yLabel = el('div', 'vchart-ylabel', cfg.yLabel || '');
-  const plot = el('div', 'vchart-plot');
-  const wrap = el('div', 'vchart');
-  wrap.append(yLabel, plot);
-  mount.append(wrap);
+  // SVG scaffold.
+  const NS = 'http://www.w3.org/2000/svg';
+  const W = 720, H = 430, L = 100, R = 650, T = 40, Bt = 355;
+  const yMax = cfg.yMax || 100;
+  const y = (v) => T + (1 - v / yMax) * (Bt - T);
+  const xOf = {};
+  cats.forEach((c, i) => { xOf[c.id] = L + (R - L) * (i + 1) / (cats.length + 1); });
+  const s2 = (tag, attrs, text) => {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    return e;
+  };
 
-  groups.forEach((g) => {
-    const group = el('div', 'vgroup');
-    const bars = el('div', 'vgroup-bars');
-    series.forEach((s) => {
-      const v = g[s.id];
-      if (v == null) return;
-      const bar = el('div', 'vbar');
-      bar.style.background = s.color;
-      bar.style.height = '0%';
-      bar.dataset.target = Math.round(v) + '';
-      bar.append(el('div', 'vbar-val', Math.round(v) + '%'));
-      bars.append(bar);
-    });
-    group.append(bars, el('div', 'vgroup-label', g.label));
-    plot.append(group);
+  const svg = s2('svg', { viewBox: `0 0 ${W} ${H}`, class: 'ablation-svg' });
+
+  // Gridlines + y ticks.
+  [20, 40, 60, 80].forEach((t) => {
+    svg.append(s2('line', { x1: L, y1: y(t), x2: R, y2: y(t), class: 'abl-grid' }));
+    svg.append(s2('text', { x: L - 10, y: y(t) + 4, class: 'abl-tick', 'text-anchor': 'end' }, t));
+  });
+  // Axes.
+  svg.append(s2('line', { x1: L, y1: T, x2: L, y2: Bt, class: 'abl-axis' }));
+  svg.append(s2('line', { x1: L, y1: Bt, x2: R, y2: Bt, class: 'abl-axis' }));
+  const ymid = (T + Bt) / 2;
+  svg.append(s2('text', { x: 30, y: ymid, class: 'abl-ylabel', 'text-anchor': 'middle',
+    transform: `rotate(-90 30 ${ymid})` }, cfg.yLabel || ''));
+
+  // Robot-only baselines (under the series lines).
+  series.forEach((s) => {
+    if (s.baseline == null) return;
+    svg.append(s2('line', { x1: L, y1: y(s.baseline), x2: R, y2: y(s.baseline), stroke: s.color, class: 'abl-baseline' }));
+    svg.append(s2('text', { x: (L + R) / 2, y: y(s.baseline) - 8, fill: s.color, class: 'abl-baseline-label',
+      'text-anchor': 'middle' }, s.baselineLabel || (s.label + ' Robot Only ' + s.baseline + '%')));
   });
 
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      if (!e.isIntersecting) return;
-      plot.querySelectorAll('.vbar').forEach((b) => { b.style.height = b.dataset.target + '%'; });
-      io.disconnect();
+  // Series lines + markers + value labels.
+  const lines = [];
+  series.forEach((s) => {
+    const pts = cats.map((c) => ({ x: xOf[c.id], v: s.points[c.id] })).filter((p) => p.v != null);
+    const d = pts.map((p, i) => (i ? 'L' : 'M') + p.x + ' ' + y(p.v)).join(' ');
+    const path = s2('path', { d, class: 'abl-line', stroke: s.color });
+    svg.append(path); lines.push(path);
+    pts.forEach((p) => {
+      if (s.marker === 'square') {
+        const z = 13;
+        svg.append(s2('rect', { x: p.x - z / 2, y: y(p.v) - z / 2, width: z, height: z, fill: s.color, class: 'abl-marker' }));
+      } else {
+        svg.append(s2('circle', { cx: p.x, cy: y(p.v), r: 7, fill: s.color, class: 'abl-marker' }));
+      }
+      svg.append(s2('text', { x: p.x, y: y(p.v) - 14, class: 'abl-val', 'text-anchor': 'middle' }, Math.round(p.v) + '%'));
     });
-  }, { threshold: 0.2 });
-  io.observe(wrap);
+  });
+
+  // X-category labels.
+  cats.forEach((c) => svg.append(s2('text', { x: xOf[c.id], y: Bt + 28, class: 'abl-xlabel', 'text-anchor': 'middle' }, c.label)));
+
+  mount.append(svg);
+
+  // Draw-in on scroll: lines draw, then markers/values fade in.
+  lines.forEach((p) => {
+    const len = p.getTotalLength ? p.getTotalLength() : 0;
+    if (len) { p.style.strokeDasharray = len; p.style.strokeDashoffset = len; }
+  });
+  const reveal = () => {
+    lines.forEach((p) => { p.style.strokeDashoffset = '0'; });
+    svg.classList.add('abl-revealed');
+  };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { reveal(); io.disconnect(); } });
+    }, { threshold: 0.3 });
+    io.observe(svg);
+  } else { reveal(); }
 }
 
 function renderWorldPred() {

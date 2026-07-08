@@ -947,13 +947,22 @@ video.r2s-video-item {
 /* --- World-prediction quantitative chart caption --- */
 .wp-metrics-note { margin-top: 14px; }
 
-/* --- Ablation chart (BC vs 3D Flow; values above bars for contrast) --- */
-#ablation-chart { max-width: 640px; margin: 0 auto; }
-#ablation-chart .vbar { width: 30px; }
-#ablation-chart .vbar-val {
-  bottom: auto; top: -18px;
-  color: #333; font-size: 12px; font-weight: 700;
-}
+/* --- Ablation slope plot (matches the paper figure) --- */
+#ablation-chart { max-width: 720px; margin: 0 auto; }
+.ablation-svg { width: 100%; height: auto; display: block; }
+.abl-grid { stroke: #e8e4d8; stroke-width: 1; }
+.abl-axis { stroke: #bbb; stroke-width: 1; }
+.abl-tick { font-family: 'Roboto Mono', monospace; font-size: 12px; fill: #666; }
+.abl-ylabel { font-family: 'Roboto Mono', monospace; font-size: 13px; fill: #666; }
+.abl-xlabel { font-family: 'Roboto Mono', monospace; font-size: 14px; font-weight: 700; fill: #333; }
+.abl-baseline { stroke-width: 4; opacity: 0.4; }
+.abl-baseline-label { font-family: 'Roboto Mono', monospace; font-size: 12px; }
+.abl-line { fill: none; stroke-width: 3; transition: stroke-dashoffset 1.1s ease; }
+.abl-marker { stroke: #fff; stroke-width: 1.5; opacity: 0; transition: opacity 0.45s ease 0.55s; }
+.abl-val { font-family: 'Roboto Mono', monospace; font-size: 15px; font-weight: 700; fill: #222; opacity: 0; transition: opacity 0.45s ease 0.6s; }
+.ablation-svg.abl-revealed .abl-marker,
+.ablation-svg.abl-revealed .abl-val { opacity: 1; }
+.perf-swatch.swatch-circle { border-radius: 50%; }
 
 /* --- Interactive morphing UMAP --- */
 .umap-canvas-wrap {
