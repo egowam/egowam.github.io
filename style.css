@@ -963,6 +963,17 @@ video.r2s-video-item {
 .ablation-svg.abl-revealed .abl-marker,
 .ablation-svg.abl-revealed .abl-val { opacity: 1; }
 .perf-swatch.swatch-circle { border-radius: 50%; }
+.perf-swatch.swatch-diamond { width: 11px; height: 11px; border-radius: 2px; transform: rotate(45deg); }
+/* Two stacked slope plots */
+.abl-plots { display: flex; flex-direction: column; gap: 34px; align-items: center; }
+.abl-plot { width: 100%; max-width: 640px; }
+.abl-title { font-family: 'Roboto Mono', monospace; font-size: 15px; font-weight: 700; color: #333; text-align: center; margin-bottom: 4px; }
+/* Qualitative in-domain vs. unaligned examples (2x2) */
+.abl-gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 720px; margin: 0 auto 30px; }
+.abl-shot { margin: 0; }
+.abl-shot img { width: 100%; height: auto; display: block; margin: 0; border-radius: 8px; border: 1px solid #e2e2e2; }
+.abl-shot figcaption { font-family: 'Roboto Mono', monospace; font-size: 13px; color: #555; text-align: center; margin-top: 6px; }
+@media (max-width: 640px) { .abl-gallery { grid-template-columns: 1fr; } }
 
 /* --- Interactive morphing UMAP --- */
 .umap-canvas-wrap {

@@ -171,10 +171,31 @@
     <div class="section">
       How robust is each approach when the human co-training data is <em>misaligned</em> with the robot? We compare co-training on <b>in-domain</b> (aligned) human data against deliberately <b>unaligned</b> human data, each measured against the method&rsquo;s <b>robot-only</b> baseline. Behavior cloning degrades sharply under unaligned data&mdash;dropping <em>below</em> its robot-only baseline&mdash;while <b>3D-Flow</b> world-model co-training stays robust.
     </div>
-    <!-- Built by app.js from CONFIG.ablation (grouped bar chart). -->
+
+    <!-- Qualitative examples: in-domain (aligned) vs. unaligned human data -->
+    <div class="abl-gallery">
+      <figure class="abl-shot">
+        <img src="figs/ablation/indomain_bag_grocery.png" alt="In-domain human demonstration, bag grocery" loading="lazy">
+        <figcaption>In-Domain &middot; Bag Grocery</figcaption>
+      </figure>
+      <figure class="abl-shot">
+        <img src="figs/ablation/indomain_cup_saucer.png" alt="In-domain human demonstration, cup on saucer" loading="lazy">
+        <figcaption>In-Domain &middot; Cup on Saucer</figcaption>
+      </figure>
+      <figure class="abl-shot">
+        <img src="figs/ablation/unaligned_bag_grocery.png" alt="Unaligned human demonstration, bag grocery" loading="lazy">
+        <figcaption>Unaligned &middot; Bag Grocery</figcaption>
+      </figure>
+      <figure class="abl-shot">
+        <img src="figs/ablation/unaligned_cup_saucer.png" alt="Unaligned human demonstration, cup on saucer" loading="lazy">
+        <figcaption>Unaligned &middot; Cup on Saucer</figcaption>
+      </figure>
+    </div>
+
+    <!-- Built by app.js from CONFIG.ablation.plots (two slope plots). -->
     <div id="ablation-chart"></div>
     <p class="figure-caption">
-      <b>WAM co-training is robust to misaligned human data.</b> With in-domain (aligned) human data both methods improve over robot-only; under unaligned human data, BC collapses to 20% (below its 40% robot-only baseline), while 3D&nbsp;Flow holds at 75%&mdash;far above its 60% baseline.
+      <b>WAM co-training resists misalignment and scales with aligned data.</b> Under <em>unaligned</em> human data, BC collapses to 20% (below its 40% robot-only baseline) while 3D&nbsp;Flow holds at 75%. Under <em>aligned</em> co-training, every world target improves over the in-domain setting, and 3D&nbsp;Flow is both highest and most stable (85%&nbsp;&rarr;&nbsp;85%).
     </p>
 
     <!-- ===================== 7. UMAP ===================== -->
