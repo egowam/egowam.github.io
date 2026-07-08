@@ -113,7 +113,7 @@ const CONFIG = {
       },
       {
         title: 'World targets under aligned co-training',
-        yLabel: 'In-Domain Success Rate (%)',
+        yLabel: 'Success Rate (%)',
         yMax: 100,
         xCats: [
           { id: 'indomain', label: 'In-Domain Co-train' },
@@ -445,74 +445,60 @@ function renderPerformance() {
   io.observe(wrap);
 }
 
-// Ablation: aligned vs. unaligned human co-training. Slope plot matching the
-// paper figure — one line per method across two co-train conditions, plus each
-// method's robot-only success as a baseline line. Lines draw in on scroll.
+// Ablation: aligned vs. unaligned human co-training. Two compact slope plots
+// (one per task) rendered into the per-column mounts in the ablation section.
 function renderAblation() {
   const mount = $('#ablation-chart');
   if (!mount) return;
   const cfg = CONFIG.ablation || {};
   const plots = cfg.plots || (cfg.series ? [cfg] : []);
-  if (!plots.length) return;
-  const grid = el('div', 'abl-plots');
-  plots.forEach((pc) => { const c = buildAblationPlot(pc); if (c) grid.append(c); });
-  mount.append(grid);
+  plots.forEach((pc, i) => {
+    const slot = mount.querySelector('.abl-plot-mount[data-plot="' + i + '"]');
+    if (!slot) return;
+    const svg = buildAblationPlot(pc);
+    if (svg) slot.append(svg);
+  });
 }
 
 // One ablation slope plot: success rate across two co-train conditions, one
-// line per method, with optional robot-only baselines. Returns a container
-// (title + legend + SVG); the lines draw in on scroll.
+// line per method, robot-only baselines, and a compact in-plot legend.
+// Returns the SVG; the lines draw in on scroll.
 function buildAblationPlot(cfg) {
   const cats = cfg.xCats || [];
   const series = cfg.series || [];
   if (!cats.length || !series.length) return null;
 
-  const container = el('div', 'abl-plot');
-  if (cfg.title) container.append(el('div', 'abl-title', cfg.title));
-
-  // Legend.
-  const legend = el('div', 'perf-legend');
-  series.forEach((s) => {
-    const shape = s.marker === 'circle' ? ' swatch-circle' : s.marker === 'diamond' ? ' swatch-diamond' : '';
-    const item = el('span', 'perf-legend-item');
-    const sw = el('span', 'perf-swatch' + shape);
-    sw.style.background = s.color;
-    item.append(sw, document.createTextNode(s.label));
-    legend.append(item);
-  });
-  container.append(legend);
-
-  // SVG scaffold.
   const NS = 'http://www.w3.org/2000/svg';
-  const W = 720, H = 430, L = 100, R = 650, T = 40, Bt = 355;
+  const W = 620, H = 500, L = 92, R = 588, T = 46, Bt = 410;
   const yMax = cfg.yMax || 100;
   const y = (v) => T + (1 - v / yMax) * (Bt - T);
   const xOf = {};
-  cats.forEach((c, i) => { xOf[c.id] = L + (R - L) * (i + 1) / (cats.length + 1); });
+  const nCats = cats.length;
+  cats.forEach((c, i) => { xOf[c.id] = L + (R - L) * (nCats === 1 ? 0.5 : 0.22 + 0.56 * i / (nCats - 1)); });
   const s2 = (tag, attrs, text) => {
     const e = document.createElementNS(NS, tag);
     for (const k in attrs) e.setAttribute(k, attrs[k]);
     if (text != null) e.textContent = text;
     return e;
   };
-  const marker = (mk, x, yv, color) => {
-    if (mk === 'square')   { const z = 13; return s2('rect', { x: x - z / 2, y: yv - z / 2, width: z, height: z, fill: color, class: 'abl-marker' }); }
-    if (mk === 'triangle') return s2('polygon', { points: `${x},${yv - 8} ${x - 8},${yv + 6} ${x + 8},${yv + 6}`, fill: color, class: 'abl-marker' });
-    if (mk === 'diamond')  return s2('polygon', { points: `${x},${yv - 9} ${x + 9},${yv} ${x},${yv + 9} ${x - 9},${yv}`, fill: color, class: 'abl-marker' });
-    return s2('circle', { cx: x, cy: yv, r: 7, fill: color, class: 'abl-marker' });
+  const marker = (mk, x, yv, color, cls) => {
+    const c = cls || 'abl-marker';
+    if (mk === 'square')   { const z = 14; return s2('rect', { x: x - z / 2, y: yv - z / 2, width: z, height: z, fill: color, class: c }); }
+    if (mk === 'triangle') return s2('polygon', { points: `${x},${yv - 9} ${x - 9},${yv + 7} ${x + 9},${yv + 7}`, fill: color, class: c });
+    if (mk === 'diamond')  return s2('polygon', { points: `${x},${yv - 10} ${x + 10},${yv} ${x},${yv + 10} ${x - 10},${yv}`, fill: color, class: c });
+    return s2('circle', { cx: x, cy: yv, r: 8, fill: color, class: c });
   };
 
   const svg = s2('svg', { viewBox: `0 0 ${W} ${H}`, class: 'ablation-svg' });
 
-  [20, 40, 60, 80].forEach((t) => {
-    svg.append(s2('line', { x1: L, y1: y(t), x2: R, y2: y(t), class: 'abl-grid' }));
-    svg.append(s2('text', { x: L - 10, y: y(t) + 4, class: 'abl-tick', 'text-anchor': 'end' }, t));
-  });
+  // Gridlines + y ticks (0..100%).
+  [20, 40, 60, 80].forEach((t) => svg.append(s2('line', { x1: L, y1: y(t), x2: R, y2: y(t), class: 'abl-grid' })));
+  [0, 20, 40, 60, 80, 100].forEach((t) => svg.append(s2('text', { x: L - 10, y: y(t) + 5, class: 'abl-tick', 'text-anchor': 'end' }, t + '%')));
   svg.append(s2('line', { x1: L, y1: T, x2: L, y2: Bt, class: 'abl-axis' }));
   svg.append(s2('line', { x1: L, y1: Bt, x2: R, y2: Bt, class: 'abl-axis' }));
   const ymid = (T + Bt) / 2;
-  svg.append(s2('text', { x: 30, y: ymid, class: 'abl-ylabel', 'text-anchor': 'middle',
-    transform: `rotate(-90 30 ${ymid})` }, cfg.yLabel || ''));
+  svg.append(s2('text', { x: 22, y: ymid, class: 'abl-ylabel', 'text-anchor': 'middle',
+    transform: `rotate(-90 22 ${ymid})` }, cfg.yLabel || ''));
 
   // Robot-only baselines (under the series lines).
   series.forEach((s) => {
@@ -522,23 +508,39 @@ function buildAblationPlot(cfg) {
       'text-anchor': 'middle' }, s.baselineLabel || (s.label + ' Robot Only ' + s.baseline + '%')));
   });
 
-  // Series lines + markers + value labels.
+  // Series lines + markers + value labels (coloured per series).
   const lines = [];
   series.forEach((s) => {
-    const pts = cats.map((c) => ({ x: xOf[c.id], v: s.points[c.id] })).filter((p) => p.v != null);
+    const pts = cats.map((c) => ({ x: xOf[c.id], v: s.points[c.id], cat: c.id })).filter((p) => p.v != null);
     const d = pts.map((p, i) => (i ? 'L' : 'M') + p.x + ' ' + y(p.v)).join(' ');
     const path = s2('path', { d, class: 'abl-line', stroke: s.color });
     svg.append(path); lines.push(path);
-    pts.forEach((p, i) => {
+    pts.forEach((p) => {
       svg.append(marker(s.marker, p.x, y(p.v), s.color));
-      const below = s.labelBelow && s.labelBelow.indexOf(cats[i].id) !== -1;
-      svg.append(s2('text', { x: p.x, y: y(p.v) + (below ? 22 : -14), class: 'abl-val', 'text-anchor': 'middle' }, Math.round(p.v) + '%'));
+      const below = s.labelBelow && s.labelBelow.indexOf(p.cat) !== -1;
+      svg.append(s2('text', { x: p.x, y: y(p.v) + (below ? 26 : -15), fill: s.color, class: 'abl-val', 'text-anchor': 'middle' }, Math.round(p.v) + '%'));
     });
   });
 
-  cats.forEach((c) => svg.append(s2('text', { x: xOf[c.id], y: Bt + 28, class: 'abl-xlabel', 'text-anchor': 'middle' }, c.label)));
+  // X-category labels.
+  cats.forEach((c) => svg.append(s2('text', { x: xOf[c.id], y: Bt + 30, class: 'abl-xlabel', 'text-anchor': 'middle' }, c.label)));
 
-  container.append(svg);
+  // In-plot legend: single row at the bottom-left, below all data points.
+  const itemH = 30, padX = 12;
+  const itemW = series.map((s) => 42 + s.label.length * 8);
+  const boxW = itemW.reduce((a, b) => a + b, 0) + padX;
+  const boxX = L + 12, boxY = Bt - itemH - 8;
+  const gl = s2('g', { class: 'abl-legend' });
+  gl.append(s2('rect', { x: boxX, y: boxY, width: boxW, height: itemH, rx: 6, class: 'abl-legend-box' }));
+  let lx = boxX + padX;
+  series.forEach((s, i) => {
+    const cy = boxY + itemH / 2;
+    gl.append(s2('line', { x1: lx, y1: cy, x2: lx + 22, y2: cy, stroke: s.color, 'stroke-width': 3 }));
+    gl.append(marker(s.marker, lx + 11, cy, s.color, 'abl-legend-marker'));
+    gl.append(s2('text', { x: lx + 30, y: cy + 5, class: 'abl-legend-label' }, s.label));
+    lx += itemW[i];
+  });
+  svg.append(gl);
 
   // Draw-in on scroll: lines draw, then markers/values fade in.
   lines.forEach((p) => {
@@ -556,7 +558,7 @@ function buildAblationPlot(cfg) {
     io.observe(svg);
   } else { reveal(); }
 
-  return container;
+  return svg;
 }
 
 function renderWorldPred() {
