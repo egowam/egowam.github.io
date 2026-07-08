@@ -493,7 +493,7 @@ video.r2s-video-item {
   /* color: #337ab7; */ /* Standard link blue, or choose your own */
   color: #333; /* Change to dark grey */
   text-decoration: none;
-  margin: 0 36px; /* Spacing between links */
+  margin: 0 18px; /* Spacing between links */
   padding: 5px 8px; /* Add some padding for a button-like feel if desired */
   /* border: 1px solid transparent; */ /* Optional: for button look */
   /* border-radius: 4px; */ /* Optional: for button look */
