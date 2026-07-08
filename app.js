@@ -131,7 +131,7 @@ const CONFIG = {
     ],
     metrics: [
       { id: 'vae',  label: 'Pixel (VAE)', metric: 'Latent MSE', eva: 0.01318, cotrain: 0.01309 },
-      { id: 'rae',  label: 'DINO (RAE)',  metric: 'Latent MSE', eva: 0.40013, cotrain: 0.39751 },
+      { id: 'rae',  label: 'DINO (RAE)',  metric: 'Latent MSE', eva: 0.00301, cotrain: 0.0029628 },
       { id: 'flow', label: '3D Flow',     metric: 'Flow MSE',   eva: 0.85579, cotrain: 0.47261 },
     ],
   },
