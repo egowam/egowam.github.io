@@ -123,16 +123,16 @@ const CONFIG = {
         cotrain: 'videos/world_pred/3DF_cotrain__point_flow.mp4' },
     ],
     // Quantitative future-prediction error (MSE, lower is better). VAE/RAE are
-    // latent-space MSE; flow is 3D point-flow MSE. Shown as a per-target 2-bar
+    // pixel-space MSE; flow is 3D point-flow MSE. Shown as a per-target 2-bar
     // chart (Robot Only vs + In-Domain Human) beside the two video panels.
     conditions: [
       { id: 'eva',     label: 'Robot Only',        color: '#CFC8B4' },
       { id: 'cotrain', label: '+ In-Domain Human', color: '#FBE0A0' },
     ],
     metrics: [
-      { id: 'vae',  label: 'Pixel (VAE)', metric: 'Latent MSE', eva: 0.01318, cotrain: 0.01309 },
-      { id: 'rae',  label: 'DINO (RAE)',  metric: 'Latent MSE', eva: 0.00301, cotrain: 0.0029628 },
-      { id: 'flow', label: '3D Flow',     metric: 'Flow MSE',   eva: 0.85579, cotrain: 0.47261 },
+      { id: 'vae',  label: 'Pixel (VAE)', metric: 'Pixel MSE', eva: 0.00252, cotrain: 0.00250 },
+      { id: 'rae',  label: 'DINO (RAE)',  metric: 'Pixel MSE', eva: 0.00300, cotrain: 0.00289 },
+      { id: 'flow', label: '3D Flow',     metric: 'Flow MSE',  eva: 0.85579, cotrain: 0.47261 },
     ],
   },
 };
