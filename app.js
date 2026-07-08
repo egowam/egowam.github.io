@@ -129,10 +129,10 @@ const CONFIG = {
     ],
     // Quantitative future-prediction error (MSE, lower is better). VAE/RAE are
     // pixel-space MSE; flow is 3D point-flow MSE. Shown as a per-target 2-bar
-    // chart (Robot Only vs + In-Domain Human) beside the two video panels.
+    // chart (Robot Only vs + Human) beside the two video panels.
     conditions: [
-      { id: 'eva',     label: 'Robot Only',        color: '#CFC8B4' },
-      { id: 'cotrain', label: '+ In-Domain Human', color: '#FBE0A0' },
+      { id: 'eva',     label: 'Robot Only', color: '#CFC8B4' },
+      { id: 'cotrain', label: '+ Human',    color: '#FBE0A0' },
     ],
     metrics: [
       { id: 'vae',  label: 'Pixel (VAE)', metric: 'Pixel MSE', eva: 0.00252, cotrain: 0.00250 },
@@ -529,7 +529,7 @@ function renderWorldPred() {
   const conds = cfg.conditions || [];
   const condOf = (id, fb) => conds.find((c) => c.id === id) || fb;
   const evaCond = condOf('eva', { id: 'eva', label: 'Robot Only', color: '#CFC8B4' });
-  const cotrainCond = condOf('cotrain', { id: 'cotrain', label: '+ In-Domain Human', color: '#FBE0A0' });
+  const cotrainCond = condOf('cotrain', { id: 'cotrain', label: '+ Human', color: '#FBE0A0' });
 
   // A video panel: coloured title + swatch, clip framed in the same colour so
   // it stays tied to its bar in the chart panel.
@@ -597,7 +597,7 @@ function renderWorldPred() {
                         show, methods[0].id);
   mount.append(tabs.bar, grid);
   mount.append(el('p', 'figure-caption wp-metrics-note',
-    'Future-prediction error for the selected target (lower is better). The two bars share that target&rsquo;s scale &mdash; the longer bar is the larger error &mdash; with absolute MSE labelled and the change vs&nbsp;Robot&nbsp;Only marked on the + In-Domain Human bar.'));
+    'Future-prediction error for the selected target (lower is better). The two bars share that target&rsquo;s scale &mdash; the longer bar is the larger error &mdash; with absolute MSE labelled and the change vs&nbsp;Robot&nbsp;Only marked on the + Human bar.'));
 
   // Defer clip downloads until the section scrolls in, then prefetch all so
   // later tab switches are instant; reveal + animate the first chart.
@@ -616,7 +616,7 @@ function renderWorldPred() {
 }
 
 // One target's prediction error as two vertical bars (Robot Only vs
-// + In-Domain Human), scaled to the larger value so the taller bar reads as
+// + Human), scaled to the larger value so the taller bar reads as
 // the bigger error. Returns { el, bars } so the caller can toggle + animate it.
 function buildTargetChart(row, conds) {
   const chart = el('div', 'wp-chart wp-hchart');
